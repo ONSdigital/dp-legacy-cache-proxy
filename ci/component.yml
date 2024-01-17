@@ -1,0 +1,15 @@
+---
+
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: golang
+    tag: 1.21.6-bullseye
+
+inputs:
+  - name: dp-legacy-cache-proxy
+
+run:
+  path: dp-legacy-cache-proxy/ci/scripts/component.sh
