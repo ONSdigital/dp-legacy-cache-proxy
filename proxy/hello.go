@@ -1,4 +1,4 @@
-package api
+package proxy
 
 import (
 	"context"
@@ -15,9 +15,9 @@ type HelloResponse struct {
 	Message string `json:"message,omitempty"`
 }
 
-// HelloHandler returns function containing a simple hello world example of an api handler
+// HelloHandler returns function containing a simple hello world example of a proxy handler
 func HelloHandler(ctx context.Context) http.HandlerFunc {
-	log.Info(ctx, "api contains example endpoint, remove hello.go as soon as possible")
+	log.Info(ctx, "proxy contains example endpoint, remove hello.go as soon as possible")
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := req.Context()
 

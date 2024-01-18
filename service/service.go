@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	"github.com/ONSdigital/dp-legacy-cache-proxy/api"
 	"github.com/ONSdigital/dp-legacy-cache-proxy/config"
+	"github.com/ONSdigital/dp-legacy-cache-proxy/proxy"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
@@ -12,12 +12,12 @@ import (
 	// "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
-// Service contains all the configs, server and clients to run the API
+// Service contains all the configs, server and clients to run the proxy
 type Service struct {
 	Config      *config.Config
 	Server      HTTPServer
 	Router      *mux.Router
-	API         *api.API
+	Proxy       *proxy.Proxy
 	ServiceList *ExternalServiceList
 	HealthCheck HealthChecker
 }
@@ -38,8 +38,8 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	// TODO: Add other(s) to serviceList here
 
-	// Setup the API
-	a := api.Setup(ctx, r)
+	// Setup the Proxy
+	p := proxy.Setup(ctx, r)
 
 	hc, err := serviceList.GetHealthCheck(cfg, buildTime, gitCommit, version)
 
@@ -65,7 +65,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	return &Service{
 		Config:      cfg,
 		Router:      r,
-		API:         a,
+		Proxy:       p,
 		HealthCheck: hc,
 		ServiceList: serviceList,
 		Server:      s,
@@ -118,8 +118,7 @@ func (svc *Service) Close(ctx context.Context) error {
 	return nil
 }
 
-func registerCheckers(ctx context.Context,
-	hc HealthChecker) (err error) {
+func registerCheckers(_ context.Context, _ HealthChecker) (err error) {
 	// TODO: add other health checks here, as per dp-upload-service
 
 	return nil
