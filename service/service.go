@@ -28,9 +28,9 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	log.Info(ctx, "using service configuration", log.Data{"config": cfg})
 
-	// Get HTTP Server and ... // TODO: Add any middleware that your service requires
 	r := mux.NewRouter()
 	r.Use(otelmux.Middleware(cfg.OTServiceName))
+	r.Use(serviceList.Init.DoGetRequestMiddleware().GetMiddlewareFunction())
 
 	// TODO: Any middleware will require 'otelhttp.NewMiddleware(cfg.OTServiceName),' included for Open Telemetry
 
@@ -38,8 +38,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	// TODO: Add other(s) to serviceList here
 
-	// Setup the Proxy
-	p := proxy.Setup(ctx, r)
+	p := proxy.Setup(ctx, r, cfg.BabbageURL)
 
 	hc, err := serviceList.GetHealthCheck(cfg, buildTime, gitCommit, version)
 

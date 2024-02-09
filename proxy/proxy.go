@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/gorilla/mux"
 )
@@ -12,12 +13,13 @@ type Proxy struct {
 }
 
 // Setup function sets up the proxy and returns a Proxy
-func Setup(ctx context.Context, r *mux.Router) *Proxy {
+func Setup(ctx context.Context, r *mux.Router, babbageURL string) *Proxy {
 	proxy := &Proxy{
 		Router: r,
 	}
 
-	// TODO: remove hello world example handler route
-	r.HandleFunc("/hello", HelloHandler(ctx)).Methods("GET")
+	r.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		proxy.manage(ctx, w, req, babbageURL)
+	})
 	return proxy
 }

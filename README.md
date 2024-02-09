@@ -21,6 +21,7 @@ Proxy for handling the cache for pages within the legacy CMS
 | OTEL_BATCH_TIMEOUT           | 5s                    | Time duration after which a batch will be sent regardless of size (`time.Duration` format)                         |
 | OTEL_EXPORTER_OTLP_ENDPOINT  | localhost:4317        | OpenTelemetry Exporter address                                                                                     |
 | OTEL_SERVICE_NAME            | dp-legacy-cache-proxy | The name of this service in OpenTelemetry                                                                          |
+| BABBAGE_URL                  | http://localhost:8080 | Babbage address, where all the incoming requests are forwarded to                                                  |
 
 ### Contributing
 

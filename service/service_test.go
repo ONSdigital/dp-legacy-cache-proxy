@@ -71,15 +71,20 @@ func TestRun(t *testing.T) {
 			return serverMock
 		}
 
-		funcDoGetFailingHTTPSerer := func(bindAddr string, router http.Handler) service.HTTPServer {
+		funcDoGetFailingHTTPServer := func(bindAddr string, router http.Handler) service.HTTPServer {
 			return failingServerMock
+		}
+
+		funcDoGetRequestMiddleware := func() service.RequestMiddleware {
+			return &service.NoOpRequestMiddleware{}
 		}
 
 		Convey("Given that initialising healthcheck returns an error", func() {
 			// setup (run before each `Convey` at this scope / indentation):
 			initMock := &mock.InitialiserMock{
-				DoGetHTTPServerFunc:  funcDoGetHTTPServerNil,
-				DoGetHealthCheckFunc: funcDoGetHealthcheckErr,
+				DoGetHTTPServerFunc:        funcDoGetHTTPServerNil,
+				DoGetHealthCheckFunc:       funcDoGetHealthcheckErr,
+				DoGetRequestMiddlewareFunc: funcDoGetRequestMiddleware,
 			}
 			svcErrors := make(chan error, 1)
 			svcList := service.NewServiceList(initMock)
@@ -98,8 +103,9 @@ func TestRun(t *testing.T) {
 		Convey("Given that all dependencies are successfully initialised", func() {
 			// setup (run before each `Convey` at this scope / indentation):
 			initMock := &mock.InitialiserMock{
-				DoGetHTTPServerFunc:  funcDoGetHTTPServer,
-				DoGetHealthCheckFunc: funcDoGetHealthcheckOk,
+				DoGetHTTPServerFunc:        funcDoGetHTTPServer,
+				DoGetHealthCheckFunc:       funcDoGetHealthcheckOk,
+				DoGetRequestMiddlewareFunc: funcDoGetRequestMiddleware,
 			}
 			svcErrors := make(chan error, 1)
 			svcList := service.NewServiceList(initMock)
@@ -161,8 +167,9 @@ func TestRun(t *testing.T) {
 		Convey("Given that all dependencies are successfully initialised but the http server fails", func() {
 			// setup (run before each `Convey` at this scope / indentation):
 			initMock := &mock.InitialiserMock{
-				DoGetHealthCheckFunc: funcDoGetHealthcheckOk,
-				DoGetHTTPServerFunc:  funcDoGetFailingHTTPSerer,
+				DoGetHealthCheckFunc:       funcDoGetHealthcheckOk,
+				DoGetHTTPServerFunc:        funcDoGetFailingHTTPServer,
+				DoGetRequestMiddlewareFunc: funcDoGetRequestMiddleware,
 			}
 			svcErrors := make(chan error, 1)
 			svcList := service.NewServiceList(initMock)
@@ -214,6 +221,7 @@ func TestClose(t *testing.T) {
 				DoGetHealthCheckFunc: func(cfg *config.Config, buildTime string, gitCommit string, version string) (service.HealthChecker, error) {
 					return hcMock, nil
 				},
+				DoGetRequestMiddlewareFunc: func() service.RequestMiddleware { return &service.NoOpRequestMiddleware{} },
 			}
 
 			svcErrors := make(chan error, 1)
@@ -240,6 +248,7 @@ func TestClose(t *testing.T) {
 				DoGetHealthCheckFunc: func(cfg *config.Config, buildTime string, gitCommit string, version string) (service.HealthChecker, error) {
 					return hcMock, nil
 				},
+				DoGetRequestMiddlewareFunc: func() service.RequestMiddleware { return &service.NoOpRequestMiddleware{} },
 			}
 
 			svcErrors := make(chan error, 1)

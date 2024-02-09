@@ -30,6 +30,7 @@ func TestConfig(t *testing.T) {
 					OTBatchTimeout:             5 * time.Second,
 					OTExporterOTLPEndpoint:     "localhost:4317",
 					OTServiceName:              "dp-legacy-cache-proxy",
+					BabbageURL:                 "http://localhost:8080",
 				})
 			})
 

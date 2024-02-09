@@ -22,6 +22,7 @@ type Component struct {
 	HTTPServer     *http.Server
 	ServiceRunning bool
 	apiFeature     *componenttest.APIFeature
+	babbageFeature *BabbageFeature
 }
 
 func NewComponent() (*Component, error) {
@@ -38,9 +39,14 @@ func NewComponent() (*Component, error) {
 		return nil, err
 	}
 
+	c.babbageFeature = NewBabbageFeature()
+
+	c.Config.BabbageURL = c.babbageFeature.Server.URL
+
 	initMock := &mock.InitialiserMock{
-		DoGetHealthCheckFunc: c.DoGetHealthcheckOk,
-		DoGetHTTPServerFunc:  c.DoGetHTTPServer,
+		DoGetHealthCheckFunc:       c.DoGetHealthcheckOk,
+		DoGetHTTPServerFunc:        c.DoGetHTTPServer,
+		DoGetRequestMiddlewareFunc: c.DoGetRequestMiddleware,
 	}
 
 	c.svcList = service.NewServiceList(initMock)
@@ -57,7 +63,10 @@ func (c *Component) Reset() *Component {
 
 func (c *Component) Close() error {
 	if c.svc != nil && c.ServiceRunning {
-		c.svc.Close(context.Background())
+		c.babbageFeature.Server.Close()
+		if err := c.svc.Close(context.Background()); err != nil {
+			return err
+		}
 		c.ServiceRunning = false
 	}
 	return nil
@@ -86,4 +95,8 @@ func (c *Component) DoGetHTTPServer(bindAddr string, router http.Handler) servic
 	c.HTTPServer.Addr = bindAddr
 	c.HTTPServer.Handler = router
 	return c.HTTPServer
+}
+
+func (c *Component) DoGetRequestMiddleware() service.RequestMiddleware {
+	return &service.HTTPTestRequestMiddleware{}
 }

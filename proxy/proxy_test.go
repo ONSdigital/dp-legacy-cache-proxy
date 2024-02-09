@@ -1,4 +1,4 @@
-package proxy
+package proxy_test
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/ONSdigital/dp-legacy-cache-proxy/proxy"
 	"github.com/gorilla/mux"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -14,12 +15,19 @@ func TestSetup(t *testing.T) {
 	Convey("Given a Proxy instance", t, func() {
 		r := mux.NewRouter()
 		ctx := context.Background()
-		proxy := Setup(ctx, r)
+		babbageURL := "mock-babbage-url"
+		legacyCacheProxy := proxy.Setup(ctx, r, babbageURL)
 
-		// TODO: remove hello world example handler route test case
-		Convey("When created the following routes should have been added", func() {
-			// Replace the check below with any newly added routes
-			So(hasRoute(proxy.Router, "/hello", "GET"), ShouldBeTrue)
+		Convey("When created, all HTTP methods should be accepted", func() {
+			So(hasRoute(legacyCacheProxy.Router, "/", http.MethodGet), ShouldBeTrue)
+			So(hasRoute(legacyCacheProxy.Router, "/", http.MethodPost), ShouldBeTrue)
+			So(hasRoute(legacyCacheProxy.Router, "/", http.MethodPut), ShouldBeTrue)
+			So(hasRoute(legacyCacheProxy.Router, "/", http.MethodDelete), ShouldBeTrue)
+			So(hasRoute(legacyCacheProxy.Router, "/", http.MethodHead), ShouldBeTrue)
+			So(hasRoute(legacyCacheProxy.Router, "/", http.MethodConnect), ShouldBeTrue)
+			So(hasRoute(legacyCacheProxy.Router, "/", http.MethodOptions), ShouldBeTrue)
+			So(hasRoute(legacyCacheProxy.Router, "/", http.MethodTrace), ShouldBeTrue)
+			So(hasRoute(legacyCacheProxy.Router, "/", http.MethodPatch), ShouldBeTrue)
 		})
 	})
 }

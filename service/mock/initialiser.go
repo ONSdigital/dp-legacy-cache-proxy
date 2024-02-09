@@ -17,34 +17,34 @@ var _ service.Initialiser = &InitialiserMock{}
 
 // InitialiserMock is a mock implementation of service.Initialiser.
 //
-//	    func TestSomethingThatUsesInitialiser(t *testing.T) {
+//	func TestSomethingThatUsesInitialiser(t *testing.T) {
 //
-//	        // make and configure a mocked service.Initialiser
-//	        mockedInitialiser := &InitialiserMock{
-//	            DoGetHTTPServerFunc: func(bindAddr string, router http.Handler) service.HTTPServer {
-//		               panic("mock out the DoGetHTTPServer method")
-//	            },
-//	            DoGetHealthCheckFunc: func(cfg *config.Config, buildTime string, gitCommit string, version string) (service.HealthChecker, error) {
-//		               panic("mock out the DoGetHealthCheck method")
-//	            },
-//	            DoGetS3UploadedFunc: func(ctx context.Context, cfg *config.Config) (api.S3Clienter, error) {
-//		               panic("mock out the DoGetS3Uploaded method")
-//	            },
-//	            DoGetVaultFunc: func(ctx context.Context, cfg *config.Config) (api.VaultClienter, error) {
-//		               panic("mock out the DoGetVault method")
-//	            },
-//	        }
+//		// make and configure a mocked service.Initialiser
+//		mockedInitialiser := &InitialiserMock{
+//			DoGetHTTPServerFunc: func(bindAddr string, router http.Handler) service.HTTPServer {
+//				panic("mock out the DoGetHTTPServer method")
+//			},
+//			DoGetHealthCheckFunc: func(cfg *config.Config, buildTime string, gitCommit string, version string) (service.HealthChecker, error) {
+//				panic("mock out the DoGetHealthCheck method")
+//			},
+//			DoGetRequestMiddlewareFunc: func() service.RequestMiddleware {
+//				panic("mock out the DoGetRequestMiddleware method")
+//			},
+//		}
 //
-//	        // use mockedInitialiser in code that requires service.Initialiser
-//	        // and then make assertions.
+//		// use mockedInitialiser in code that requires service.Initialiser
+//		// and then make assertions.
 //
-//	    }
+//	}
 type InitialiserMock struct {
 	// DoGetHTTPServerFunc mocks the DoGetHTTPServer method.
 	DoGetHTTPServerFunc func(bindAddr string, router http.Handler) service.HTTPServer
 
 	// DoGetHealthCheckFunc mocks the DoGetHealthCheck method.
 	DoGetHealthCheckFunc func(cfg *config.Config, buildTime string, gitCommit string, version string) (service.HealthChecker, error)
+
+	// DoGetRequestMiddlewareFunc mocks the DoGetRequestMiddleware method.
+	DoGetRequestMiddlewareFunc func() service.RequestMiddleware
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -66,9 +66,13 @@ type InitialiserMock struct {
 			// Version is the version argument value.
 			Version string
 		}
+		// DoGetRequestMiddleware holds details about calls to the DoGetRequestMiddleware method.
+		DoGetRequestMiddleware []struct {
+		}
 	}
-	lockDoGetHTTPServer  sync.RWMutex
-	lockDoGetHealthCheck sync.RWMutex
+	lockDoGetHTTPServer        sync.RWMutex
+	lockDoGetHealthCheck       sync.RWMutex
+	lockDoGetRequestMiddleware sync.RWMutex
 }
 
 // DoGetHTTPServer calls DoGetHTTPServerFunc.
@@ -148,5 +152,32 @@ func (mock *InitialiserMock) DoGetHealthCheckCalls() []struct {
 	mock.lockDoGetHealthCheck.RLock()
 	calls = mock.calls.DoGetHealthCheck
 	mock.lockDoGetHealthCheck.RUnlock()
+	return calls
+}
+
+// DoGetRequestMiddleware calls DoGetRequestMiddlewareFunc.
+func (mock *InitialiserMock) DoGetRequestMiddleware() service.RequestMiddleware {
+	if mock.DoGetRequestMiddlewareFunc == nil {
+		panic("InitialiserMock.DoGetRequestMiddlewareFunc: method is nil but Initialiser.DoGetRequestMiddleware was just called")
+	}
+	callInfo := struct {
+	}{}
+	mock.lockDoGetRequestMiddleware.Lock()
+	mock.calls.DoGetRequestMiddleware = append(mock.calls.DoGetRequestMiddleware, callInfo)
+	mock.lockDoGetRequestMiddleware.Unlock()
+	return mock.DoGetRequestMiddlewareFunc()
+}
+
+// DoGetRequestMiddlewareCalls gets all the calls that were made to DoGetRequestMiddleware.
+// Check the length with:
+//
+//	len(mockedInitialiser.DoGetRequestMiddlewareCalls())
+func (mock *InitialiserMock) DoGetRequestMiddlewareCalls() []struct {
+} {
+	var calls []struct {
+	}
+	mock.lockDoGetRequestMiddleware.RLock()
+	calls = mock.calls.DoGetRequestMiddleware
+	mock.lockDoGetRequestMiddleware.RUnlock()
 	return calls
 }

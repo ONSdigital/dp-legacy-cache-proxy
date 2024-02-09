@@ -15,6 +15,7 @@ type Config struct {
 	OTBatchTimeout             time.Duration `encconfig:"OTEL_BATCH_TIMEOUT"`
 	OTExporterOTLPEndpoint     string        `envconfig:"OTEL_EXPORTER_OTLP_ENDPOINT"`
 	OTServiceName              string        `envconfig:"OTEL_SERVICE_NAME"`
+	BabbageURL                 string        `envconfig:"BABBAGE_URL"`
 }
 
 var cfg *Config
@@ -34,6 +35,7 @@ func Get() (*Config, error) {
 		OTBatchTimeout:             5 * time.Second,
 		OTExporterOTLPEndpoint:     "localhost:4317",
 		OTServiceName:              "dp-legacy-cache-proxy",
+		BabbageURL:                 "http://localhost:8080",
 	}
 
 	return cfg, envconfig.Process("", cfg)
