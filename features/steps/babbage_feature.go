@@ -3,6 +3,7 @@ package steps
 import (
 	"net/http"
 	"net/http/httptest"
+	"net/textproto"
 	"strconv"
 	"strings"
 
@@ -37,31 +38,36 @@ func NewBabbageFeature() *BabbageFeature {
 }
 
 func (f *BabbageFeature) RegisterSteps(ctx *godog.ScenarioContext) {
-	ctx.Step(`^Babbage sends the following response:$`, f.babbageSendsTheFollowingResponse)
-	ctx.Step(`^Babbage sends the following response with status "([^"]*)":$`, f.babbageSendsTheFollowingResponseWithStatus)
-	ctx.Step(`^Babbage sets the "([^"]*)" header to "([^"]*)"$`, f.babbageSetsTheHeaderTo)
+	ctx.Step(`^Babbage will send the following response:$`, f.babbageWillSendTheFollowingResponse)
+	ctx.Step(`^Babbage will send the following response with status "([^"]*)":$`, f.babbageWillSendTheFollowingResponseWithStatus)
+	ctx.Step(`^Babbage will set the "([^"]*)" header to "([^"]*)"$`, f.babbageWillSetTheHeaderTo)
+	ctx.Step(`^Babbage will set the HTTP status code to "([^"]*)"$`, f.babbageWillSetTheHTTPStatusCodeTo)
 }
 
-func (f *BabbageFeature) babbageSendsTheFollowingResponse(babbageBody *godog.DocString) error {
-	return f.babbageSendsTheFollowingResponseWithStatus("200", babbageBody)
+func (f *BabbageFeature) babbageWillSendTheFollowingResponse(babbageBody *godog.DocString) error {
+	return f.babbageWillSendTheFollowingResponseWithStatus("200", babbageBody)
 }
 
-func (f *BabbageFeature) babbageSendsTheFollowingResponseWithStatus(statusCodeStr string, babbageBody *godog.DocString) error {
+func (f *BabbageFeature) babbageWillSendTheFollowingResponseWithStatus(statusCodeStr string, babbageBody *godog.DocString) error {
+	f.Body = strings.TrimSpace(babbageBody.Content)
+
+	return f.babbageWillSetTheHTTPStatusCodeTo(statusCodeStr)
+}
+
+func (f *BabbageFeature) babbageWillSetTheHeaderTo(headerName, headerValue string) error {
+	canonicalHeaderName := textproto.CanonicalMIMEHeaderKey(headerName)
+	f.Headers[canonicalHeaderName] = headerValue
+
+	return nil
+}
+
+func (f *BabbageFeature) babbageWillSetTheHTTPStatusCodeTo(statusCodeStr string) error {
 	statusCode, err := strconv.Atoi(statusCodeStr)
 	if err != nil {
 		return err
 	}
 
-	body := strings.TrimSpace(babbageBody.Content)
-
 	f.StatusCode = statusCode
-	f.Body = body
-
-	return nil
-}
-
-func (f *BabbageFeature) babbageSetsTheHeaderTo(headerName, headerValue string) error {
-	f.Headers[headerName] = headerValue
 
 	return nil
 }
