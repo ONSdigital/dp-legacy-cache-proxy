@@ -38,8 +38,6 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	// TODO: Add other(s) to serviceList here
 
-	p := proxy.Setup(ctx, r, cfg.BabbageURL)
-
 	hc, err := serviceList.GetHealthCheck(cfg, buildTime, gitCommit, version)
 
 	if err != nil {
@@ -52,6 +50,11 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	}
 
 	r.StrictSlash(true).Path("/health").HandlerFunc(hc.Handler)
+
+	// The proxy needs to be set up after the HealthCheck route has been added to the router: in the Setup method, the
+	// proxy adds a catch-all route, so any other routes added after that one will never be reachable.
+	p := proxy.Setup(ctx, r, cfg.BabbageURL)
+
 	hc.Start(ctx)
 
 	// Run the http server in a new go-routine

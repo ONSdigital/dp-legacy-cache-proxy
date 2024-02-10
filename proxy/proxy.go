@@ -18,7 +18,7 @@ func Setup(ctx context.Context, r *mux.Router, babbageURL string) *Proxy {
 		Router: r,
 	}
 
-	r.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	r.PathPrefix("/").Name("Proxy Catch-All").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		proxy.manage(ctx, w, req, babbageURL)
 	})
 	return proxy

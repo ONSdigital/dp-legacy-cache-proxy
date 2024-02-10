@@ -14,6 +14,7 @@ import (
 	"github.com/ONSdigital/dp-legacy-cache-proxy/service"
 	"github.com/ONSdigital/dp-legacy-cache-proxy/service/mock"
 
+	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -110,7 +111,7 @@ func TestRun(t *testing.T) {
 			svcErrors := make(chan error, 1)
 			svcList := service.NewServiceList(initMock)
 			serverWg.Add(1)
-			_, err := service.Run(ctx, cfg, svcList, testBuildTime, testGitCommit, testVersion, svcErrors)
+			svc, err := service.Run(ctx, cfg, svcList, testBuildTime, testGitCommit, testVersion, svcErrors)
 
 			Convey("Then service Run succeeds and all the flags are set", func() {
 				So(err, ShouldBeNil)
@@ -125,6 +126,15 @@ func TestRun(t *testing.T) {
 				//!!! a call needed to stop the server, maybe ?
 				serverWg.Wait() // Wait for HTTP server go-routine to finish
 				So(len(serverMock.ListenAndServeCalls()), ShouldEqual, 1)
+			})
+
+			Convey("Then the proxy's catch-all route is the one with the lowest precedence", func() {
+				var lastRouteName string
+				_ = svc.Router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
+					lastRouteName = route.GetName()
+					return nil
+				})
+				So(lastRouteName, ShouldEqual, "Proxy Catch-All")
 			})
 
 			Reset(func() {
