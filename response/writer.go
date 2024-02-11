@@ -6,10 +6,11 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/ONSdigital/dp-legacy-cache-proxy/config"
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
-func WriteResponse(ctx context.Context, w http.ResponseWriter, babbageResponse *http.Response, req *http.Request) {
+func WriteResponse(ctx context.Context, w http.ResponseWriter, babbageResponse *http.Response, req *http.Request, cfg *config.Config) {
 	if !isGetOrHead(req.Method) {
 		writeUnmodifiedResponse(ctx, w, babbageResponse)
 	} else if !isCacheableStatusCode(babbageResponse.StatusCode) {
@@ -17,7 +18,7 @@ func WriteResponse(ctx context.Context, w http.ResponseWriter, babbageResponse *
 	} else if cacheControl := babbageResponse.Header.Get("Cache-Control"); !shouldCalculateMaxAge(cacheControl) {
 		writeUnmodifiedResponse(ctx, w, babbageResponse)
 	} else {
-		maxAgeInSeconds := maxAge(ctx, req.URL.Path)
+		maxAgeInSeconds := maxAge(ctx, req.RequestURI, cfg)
 		writeResponseWithMaxAge(ctx, w, babbageResponse, maxAgeInSeconds)
 	}
 }

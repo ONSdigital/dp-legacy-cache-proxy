@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/ONSdigital/dp-legacy-cache-proxy/config"
 	"github.com/ONSdigital/dp-legacy-cache-proxy/proxy"
 	"github.com/gorilla/mux"
 	. "github.com/smartystreets/goconvey/convey"
@@ -25,9 +26,9 @@ func TestProxyHandleRequestOK(t *testing.T) {
 
 		ctx := context.Background()
 		router := mux.NewRouter()
-		babbageURL := mockBabbageServer.URL
+		cfg := &config.Config{BabbageURL: mockBabbageServer.URL}
 
-		legacyCacheProxy := proxy.Setup(ctx, router, babbageURL)
+		legacyCacheProxy := proxy.Setup(ctx, router, cfg)
 
 		Convey("When a request is sent", func() {
 			w := httptest.NewRecorder()
@@ -47,7 +48,8 @@ func TestProxyHandleRequestError(t *testing.T) {
 	Convey("Given a Proxy with an invalid Babbage URL configuration", t, func() {
 		ctx := context.Background()
 		router := mux.NewRouter()
-		legacyCacheProxy := proxy.Setup(ctx, router, "invalid-babbage-url")
+		cfg := &config.Config{BabbageURL: "invalid-babbage-url"}
+		legacyCacheProxy := proxy.Setup(ctx, router, cfg)
 
 		Convey("When a request is sent", func() {
 			w := httptest.NewRecorder()

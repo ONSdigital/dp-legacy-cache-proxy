@@ -53,7 +53,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	// The proxy needs to be set up after the HealthCheck route has been added to the router: in the Setup method, the
 	// proxy adds a catch-all route, so any other routes added after that one will never be reachable.
-	p := proxy.Setup(ctx, r, cfg.BabbageURL)
+	p := proxy.Setup(ctx, r, cfg)
 
 	hc.Start(ctx)
 
