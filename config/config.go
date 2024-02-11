@@ -16,6 +16,10 @@ type Config struct {
 	OTExporterOTLPEndpoint     string        `envconfig:"OTEL_EXPORTER_OTLP_ENDPOINT"`
 	OTServiceName              string        `envconfig:"OTEL_SERVICE_NAME"`
 	BabbageURL                 string        `envconfig:"BABBAGE_URL"`
+	CacheTimeDefault           time.Duration `envconfig:"CACHE_TIME_DEFAULT"`
+	CacheTimeErrored           time.Duration `envconfig:"CACHE_TIME_ERRORED"`
+	CacheTimeLong              time.Duration `envconfig:"CACHE_TIME_LONG"`
+	CacheTimeShort             time.Duration `envconfig:"CACHE_TIME_SHORT"`
 }
 
 var cfg *Config
@@ -36,6 +40,10 @@ func Get() (*Config, error) {
 		OTExporterOTLPEndpoint:     "localhost:4317",
 		OTServiceName:              "dp-legacy-cache-proxy",
 		BabbageURL:                 "http://localhost:8080",
+		CacheTimeDefault:           15 * time.Minute,
+		CacheTimeErrored:           30 * time.Second,
+		CacheTimeLong:              4 * time.Hour,
+		CacheTimeShort:             10 * time.Second,
 	}
 
 	return cfg, envconfig.Process("", cfg)

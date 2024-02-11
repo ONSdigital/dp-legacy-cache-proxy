@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/ONSdigital/dp-legacy-cache-proxy/config"
 	"github.com/gorilla/mux"
 )
 
@@ -13,13 +14,13 @@ type Proxy struct {
 }
 
 // Setup function sets up the proxy and returns a Proxy
-func Setup(ctx context.Context, r *mux.Router, babbageURL string) *Proxy {
+func Setup(ctx context.Context, r *mux.Router, cfg *config.Config) *Proxy {
 	proxy := &Proxy{
 		Router: r,
 	}
 
 	r.PathPrefix("/").Name("Proxy Catch-All").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		proxy.manage(ctx, w, req, babbageURL)
+		proxy.manage(ctx, w, req, cfg)
 	})
 	return proxy
 }

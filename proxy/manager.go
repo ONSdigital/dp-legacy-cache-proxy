@@ -4,12 +4,13 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/ONSdigital/dp-legacy-cache-proxy/config"
 	"github.com/ONSdigital/dp-legacy-cache-proxy/response"
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
-func (proxy *Proxy) manage(ctx context.Context, w http.ResponseWriter, req *http.Request, babbageURL string) {
-	targetURL := babbageURL + req.URL.String()
+func (proxy *Proxy) manage(ctx context.Context, w http.ResponseWriter, req *http.Request, cfg *config.Config) {
+	targetURL := cfg.BabbageURL + req.URL.String()
 
 	proxyReq, err := http.NewRequestWithContext(ctx, req.Method, targetURL, req.Body)
 
@@ -37,5 +38,5 @@ func (proxy *Proxy) manage(ctx context.Context, w http.ResponseWriter, req *http
 		}
 	}()
 
-	response.WriteResponse(ctx, w, babbageResponse, req)
+	response.WriteResponse(ctx, w, babbageResponse, req, cfg)
 }

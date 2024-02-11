@@ -1,6 +1,9 @@
 package service
 
-import "net/http"
+import (
+	"net/http"
+	"strings"
+)
 
 type NoOpRequestMiddleware struct{}
 
@@ -21,6 +24,9 @@ func (rm HTTPTestRequestMiddleware) GetMiddlewareFunction() func(http.Handler) h
 			// host are not set. This middleware removes them, so that the request looks like it would in production.
 			r.URL.Scheme = ""
 			r.URL.Host = ""
+
+			requestURI, _ := strings.CutPrefix(r.RequestURI, "http://foo")
+			r.RequestURI = requestURI
 
 			next.ServeHTTP(w, r)
 		})

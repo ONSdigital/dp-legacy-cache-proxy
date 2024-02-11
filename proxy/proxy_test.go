@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/ONSdigital/dp-legacy-cache-proxy/config"
 	"github.com/ONSdigital/dp-legacy-cache-proxy/proxy"
 	"github.com/gorilla/mux"
 	. "github.com/smartystreets/goconvey/convey"
@@ -15,8 +16,8 @@ func TestSetup(t *testing.T) {
 	Convey("Given a Proxy instance", t, func() {
 		r := mux.NewRouter()
 		ctx := context.Background()
-		babbageURL := "mock-babbage-url"
-		legacyCacheProxy := proxy.Setup(ctx, r, babbageURL)
+		cfg := &config.Config{}
+		legacyCacheProxy := proxy.Setup(ctx, r, cfg)
 
 		Convey("When created, all HTTP methods should be accepted", func() {
 			So(hasRoute(legacyCacheProxy.Router, "/", http.MethodGet), ShouldBeTrue)

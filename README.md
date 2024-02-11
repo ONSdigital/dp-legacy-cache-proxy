@@ -22,6 +22,10 @@ Proxy for handling the cache for pages within the legacy CMS
 | OTEL_EXPORTER_OTLP_ENDPOINT  | localhost:4317        | OpenTelemetry Exporter address                                                                                     |
 | OTEL_SERVICE_NAME            | dp-legacy-cache-proxy | The name of this service in OpenTelemetry                                                                          |
 | BABBAGE_URL                  | http://localhost:8080 | Babbage address, where all the incoming requests are forwarded to                                                  |
+| CACHE_TIME_DEFAULT           | 15m                   | Default value for the `max-age` directive of the `Cache-Control` header (`time.Duration` format)                   |
+| CACHE_TIME_ERRORED           | 30s                   | Errored value for the `max-age` directive of the `Cache-Control` header (`time.Duration` format)                   |
+| CACHE_TIME_LONG              | 4h                    | Long value for the `max-age` directive of the `Cache-Control` header (`time.Duration` format)                      |
+| CACHE_TIME_SHORT             | 10s                   | Short value for the `max-age` directive of the `Cache-Control` header (`time.Duration` format)                     |
 
 ### Contributing
 
