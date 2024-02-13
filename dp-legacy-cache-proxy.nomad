@@ -27,9 +27,7 @@ job "dp-legacy-cache-proxy" {
     }
 
     network {
-      port "http" {
-        to = 29200
-      }
+      port "http" {}
     }
 
     service {
