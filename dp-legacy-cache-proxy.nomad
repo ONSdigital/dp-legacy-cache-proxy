@@ -27,7 +27,9 @@ job "dp-legacy-cache-proxy" {
     }
 
     network {
-      port "http" {}
+      port "http" {
+        to = 29200
+      }
     }
 
     service {
@@ -62,7 +64,7 @@ job "dp-legacy-cache-proxy" {
         # Configs based on environment (e.g. export BIND_ADDR=":{{ env "NOMAD_PORT_http" }}")
         # or static (e.g. export BIND_ADDR=":8080")
 
-        NOMAD_PORT_http="{{ env "NOMAD_PORT_http" }}"
+        export BABBAGE_URL="http://{{ env "NOMAD_IP_http" }}:10000"
 
         # Secret configs read from vault
         {{ with (secret (print "secret/" (env "NOMAD_TASK_NAME"))) }}
