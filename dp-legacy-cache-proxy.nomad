@@ -62,6 +62,8 @@ job "dp-legacy-cache-proxy" {
         # Configs based on environment (e.g. export BIND_ADDR=":{{ env "NOMAD_PORT_http" }}")
         # or static (e.g. export BIND_ADDR=":8080")
 
+        NOMAD_PORT_http="{{ env "NOMAD_PORT_http" }}"
+
         # Secret configs read from vault
         {{ with (secret (print "secret/" (env "NOMAD_TASK_NAME"))) }}
         {{ range $key, $value := .Data }}
