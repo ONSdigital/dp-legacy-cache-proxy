@@ -31,10 +31,12 @@ func TestConfig(t *testing.T) {
 					OTExporterOTLPEndpoint:     "localhost:4317",
 					OTServiceName:              "dp-legacy-cache-proxy",
 					BabbageURL:                 "http://localhost:8080",
+					LegacyCacheAPIURL:          "http://localhost:29100",
 					CacheTimeDefault:           15 * time.Minute,
 					CacheTimeErrored:           30 * time.Second,
 					CacheTimeLong:              4 * time.Hour,
 					CacheTimeShort:             10 * time.Second,
+					PublishExpiryOffset:        3 * time.Minute,
 				})
 			})
 

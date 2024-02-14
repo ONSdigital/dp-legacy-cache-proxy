@@ -16,14 +16,15 @@ import (
 
 type Component struct {
 	componenttest.ErrorFeature
-	svcList        *service.ExternalServiceList
-	svc            *service.Service
-	errorChan      chan error
-	Config         *config.Config
-	HTTPServer     *http.Server
-	ServiceRunning bool
-	apiFeature     *componenttest.APIFeature
-	babbageFeature *BabbageFeature
+	svcList               *service.ExternalServiceList
+	svc                   *service.Service
+	errorChan             chan error
+	Config                *config.Config
+	HTTPServer            *http.Server
+	ServiceRunning        bool
+	apiFeature            *componenttest.APIFeature
+	babbageFeature        *BabbageFeature
+	legacyCacheAPIFeature *LegacyCacheAPIFeature
 }
 
 func NewComponent() (*Component, error) {
@@ -41,8 +42,10 @@ func NewComponent() (*Component, error) {
 	}
 
 	c.babbageFeature = NewBabbageFeature()
+	c.legacyCacheAPIFeature = NewLegacyCacheAPIFeature()
 
 	c.Config.BabbageURL = c.babbageFeature.Server.URL
+	c.Config.LegacyCacheAPIURL = c.legacyCacheAPIFeature.Server.URL
 
 	initMock := &mock.InitialiserMock{
 		DoGetHealthCheckFunc:       c.DoGetHealthcheckOk,
@@ -59,12 +62,14 @@ func NewComponent() (*Component, error) {
 
 func (c *Component) Reset() *Component {
 	c.apiFeature.Reset()
+	c.legacyCacheAPIFeature.Reset()
 	return c
 }
 
 func (c *Component) Close() error {
 	if c.svc != nil && c.ServiceRunning {
 		c.babbageFeature.Server.Close()
+		c.legacyCacheAPIFeature.Server.Close()
 		if err := c.svc.Close(context.Background()); err != nil {
 			return err
 		}

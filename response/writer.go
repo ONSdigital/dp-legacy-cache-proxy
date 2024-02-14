@@ -43,6 +43,7 @@ func writeResponse(ctx context.Context, w http.ResponseWriter, babbageResponse *
 	if _, err := io.Copy(w, babbageResponse.Body); err != nil {
 		log.Error(ctx, "error copying the proxy response's body", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		return
 	}
 }
 

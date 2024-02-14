@@ -2,15 +2,18 @@ package steps
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 
 	"github.com/cucumber/godog"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
 func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	c.apiFeature.RegisterSteps(ctx)
 	c.babbageFeature.RegisterSteps(ctx)
+	c.legacyCacheAPIFeature.RegisterSteps(ctx)
 
 	ctx.Step(`^I should receive an empty response$`, c.iShouldReceiveAnEmptyResponse)
 	ctx.Step(`^I should receive the same, unmodified response from Babbage$`, c.iShouldReceiveTheSameUnmodifiedResponseFromBabbage)
@@ -19,6 +22,7 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the Proxy receives a PUT request for "([^"]*)"$`, c.apiFeature.IPut)
 	ctx.Step(`^the Proxy receives a PATCH request for "([^"]*)"$`, c.apiFeature.IPatch)
 	ctx.Step(`^the Proxy receives a DELETE request for "([^"]*)"$`, c.apiFeature.IDelete)
+	ctx.Step(`^the max-age directive should be calculated, rather than predefined$`, c.theMaxAgeDirectiveShouldBeCalculatedRatherThanPredefined)
 }
 
 func (c *Component) iShouldReceiveAnEmptyResponse() error {
@@ -61,6 +65,43 @@ func (c *Component) iShouldReceiveTheSameUnmodifiedResponseFromBabbage() error {
 	}
 
 	return c.StepError()
+}
+
+func (c *Component) theMaxAgeDirectiveShouldBeCalculatedRatherThanPredefined() error {
+	cacheControl := c.apiFeature.HTTPResponse.Header.Get("Cache-Control")
+
+	re := regexp.MustCompile(`max-age=(\d+)`)
+	match := re.FindStringSubmatch(cacheControl)
+
+	maxAgeFound := assert.Len(c, match, 2)
+	if !maxAgeFound {
+		return errors.New("the max-age directive was not found or is invalid")
+	}
+
+	maxAge, err := strconv.Atoi(match[1])
+	if err != nil {
+		return err
+	}
+
+	defaultCacheTime := int(c.Config.CacheTimeDefault.Seconds())
+	preConfiguredCacheTimes := []int{
+		defaultCacheTime,
+		int(c.Config.CacheTimeErrored.Seconds()),
+		int(c.Config.CacheTimeLong.Seconds()),
+		int(c.Config.CacheTimeShort.Seconds()),
+	}
+
+	isMaxAgeCalculated := assert.NotContains(c, preConfiguredCacheTimes, maxAge)
+	if !isMaxAgeCalculated {
+		return fmt.Errorf("max-age is not calculated, its value (%d) is the same as one of the pre-configured cache times", maxAge)
+	}
+
+	isMaxAgeLowerThanDefaultCacheTime := assert.Less(c, maxAge, defaultCacheTime)
+	if !isMaxAgeLowerThanDefaultCacheTime {
+		return fmt.Errorf("max-age (%d) is not lower than the default cache time (%d)", maxAge, defaultCacheTime)
+	}
+
+	return nil
 }
 
 // shouldEvaluateHeader helps determine which headers should be skipped when comparing the Babbage and the Proxy response

@@ -93,6 +93,11 @@ issues:
       linters:
         - revive
       source: "github.com/smartystreets/goconvey/convey"
+    # Allow md5 usage, as it's used for hashing, not for cryptography
+    - path: (release_time|legacy_cache_api_feature).go
+      text: "weak cryptographic primitive"
+      linters:
+        - gosec
   new: false
 
 # golangci.com configuration
