@@ -12,6 +12,8 @@ import (
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
+const maxAgeErrorMessage = "error calculating the max-age directive"
+
 var versionedURIRegexp = regexp.MustCompile(`/previous/v\d+`)
 
 func maxAge(ctx context.Context, uri string, cfg *config.Config) int {
@@ -21,11 +23,15 @@ func maxAge(ctx context.Context, uri string, cfg *config.Config) int {
 		return int(cfg.CacheTimeLong.Seconds())
 	}
 
-	pagePath := getPagePath(ctx, uri)
+	pagePath, err := getPagePath(ctx, uri)
+	if err != nil {
+		log.Error(ctx, maxAgeErrorMessage, err)
+		return int(cfg.CacheTimeErrored.Seconds())
+	}
 
 	releaseTime, statusCode, err := getReleaseTime(pagePath, cfg.LegacyCacheAPIURL)
 	if err != nil {
-		log.Error(ctx, "error calculating the max-age directive", err)
+		log.Error(ctx, maxAgeErrorMessage, err)
 		return int(cfg.CacheTimeErrored.Seconds())
 	}
 
@@ -35,7 +41,7 @@ func maxAge(ctx context.Context, uri string, cfg *config.Config) int {
 
 	if statusCode != http.StatusOK {
 		unexpectedStatusCodeError := fmt.Errorf("unexpected Legacy Cache API status code: %d", statusCode)
-		log.Error(ctx, "error calculating the max-age directive", unexpectedStatusCodeError)
+		log.Error(ctx, maxAgeErrorMessage, unexpectedStatusCodeError)
 		return int(cfg.CacheTimeErrored.Seconds())
 	}
 
