@@ -29,7 +29,6 @@ type Component struct {
 
 func NewComponent() (*Component, error) {
 	c := &Component{
-		HTTPServer:     &http.Server{ReadHeaderTimeout: 3 * time.Second},
 		errorChan:      make(chan error),
 		ServiceRunning: false,
 	}
@@ -98,8 +97,11 @@ func (c *Component) DoGetHealthcheckOk(_ *config.Config, _, _, _ string) (servic
 }
 
 func (c *Component) DoGetHTTPServer(bindAddr string, router http.Handler) service.HTTPServer {
-	c.HTTPServer.Addr = bindAddr
-	c.HTTPServer.Handler = router
+	c.HTTPServer = &http.Server{
+		ReadHeaderTimeout: 3 * time.Second,
+		Addr:              bindAddr,
+		Handler:           router,
+	}
 	return c.HTTPServer
 }
 
