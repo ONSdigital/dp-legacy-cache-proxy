@@ -26,7 +26,7 @@ func TestGetReleaseTime(t *testing.T) {
 			{
 				"_id": "7fadfea5c8372c59c0d20599ff95b42a",
 				"path": "/some-valid-path",
-				"collection_id": 123456,
+				"collection_id": "test-1a19e3462937d85804752375daa00ba41d1b6625d396f21000e3c4571ebf2606",
 				"release_time": "2024-01-31T01:23:45.678Z"
 			}`
 			writeMockResponse = setMockResponse(cacheTimeResource, http.StatusOK)
