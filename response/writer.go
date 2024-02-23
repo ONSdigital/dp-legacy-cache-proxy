@@ -23,7 +23,7 @@ func WriteResponse(ctx context.Context, w http.ResponseWriter, babbageResponse *
 	}
 }
 
-func writeResponse(ctx context.Context, w http.ResponseWriter, babbageResponse *http.Response, additionalHeaders map[string]string) {
+func writeResponse(ctx context.Context, w http.ResponseWriter, babbageResponse *http.Response, overrideHeaders map[string]string) {
 	// Copy the Babbage response's headers
 	for name, values := range babbageResponse.Header {
 		for _, value := range values {
@@ -31,9 +31,9 @@ func writeResponse(ctx context.Context, w http.ResponseWriter, babbageResponse *
 		}
 	}
 
-	// Add any other additional headers
-	for name, value := range additionalHeaders {
-		w.Header().Add(name, value)
+	// Set any new headers or overwrite existing
+	for name, value := range overrideHeaders {
+		w.Header().Set(name, value)
 	}
 
 	// Copy the Babbage response's status code
@@ -53,12 +53,17 @@ func writeUnmodifiedResponse(ctx context.Context, w http.ResponseWriter, babbage
 }
 
 func writeResponseWithMaxAge(ctx context.Context, w http.ResponseWriter, babbageResponse *http.Response, maxAge int) {
-	cacheControlValue := fmt.Sprintf("max-age=%d", maxAge)
-	additionalHeaders := map[string]string{
-		"Cache-Control": cacheControlValue,
+	overrideHeaders := make(map[string]string)
+
+	// Get the original Cache-Control value and modify it to include max-age
+	originalCacheControl := babbageResponse.Header.Get("Cache-Control")
+	if originalCacheControl != "" {
+		overrideHeaders["Cache-Control"] = fmt.Sprintf("%s, max-age=%d", originalCacheControl, maxAge)
+	} else {
+		overrideHeaders["Cache-Control"] = fmt.Sprintf("max-age=%d", maxAge)
 	}
 
-	writeResponse(ctx, w, babbageResponse, additionalHeaders)
+	writeResponse(ctx, w, babbageResponse, overrideHeaders)
 }
 
 func isGetOrHead(method string) bool {
