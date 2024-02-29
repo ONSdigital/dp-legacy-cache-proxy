@@ -23,6 +23,11 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the Proxy receives a PATCH request for "([^"]*)"$`, c.apiFeature.IPatch)
 	ctx.Step(`^the Proxy receives a DELETE request for "([^"]*)"$`, c.apiFeature.IDelete)
 	ctx.Step(`^the max-age directive should be calculated, rather than predefined$`, c.theMaxAgeDirectiveShouldBeCalculatedRatherThanPredefined)
+	ctx.Step(`^the Proxy has the publish expiry offset disabled$`, c.disablePublishExpiryOffset)
+}
+
+func (c *Component) disablePublishExpiryOffset() {
+	c.Config.EnablePublishExpiryOffset = false
 }
 
 func (c *Component) iShouldReceiveAnEmptyResponse() error {

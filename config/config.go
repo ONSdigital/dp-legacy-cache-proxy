@@ -21,6 +21,7 @@ type Config struct {
 	CacheTimeErrored           time.Duration `envconfig:"CACHE_TIME_ERRORED"`
 	CacheTimeLong              time.Duration `envconfig:"CACHE_TIME_LONG"`
 	CacheTimeShort             time.Duration `envconfig:"CACHE_TIME_SHORT"`
+	EnablePublishExpiryOffset  bool          `envconfig:"ENABLE_PUBLISH_EXPIRY_OFFSET"`
 	PublishExpiryOffset        time.Duration `envconfig:"PUBLISH_EXPIRY_OFFSET"`
 }
 
@@ -47,6 +48,7 @@ func Get() (*Config, error) {
 		CacheTimeErrored:           30 * time.Second,
 		CacheTimeLong:              4 * time.Hour,
 		CacheTimeShort:             10 * time.Second,
+		EnablePublishExpiryOffset:  false,
 		PublishExpiryOffset:        3 * time.Minute,
 	}
 

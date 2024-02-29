@@ -96,11 +96,12 @@ func TestMaxAgeInteractionWithLegacyCacheAPI(t *testing.T) {
 		const publishExpiryOffset = 15
 
 		cfg := &config.Config{
-			LegacyCacheAPIURL:   mockLegacyCacheAPI.URL,
-			CacheTimeDefault:    time.Duration(defaultCacheTime) * time.Second,
-			CacheTimeErrored:    time.Duration(erroredCacheTime) * time.Second,
-			CacheTimeShort:      time.Duration(shortCacheTime) * time.Second,
-			PublishExpiryOffset: time.Duration(publishExpiryOffset) * time.Second,
+			LegacyCacheAPIURL:         mockLegacyCacheAPI.URL,
+			CacheTimeDefault:          time.Duration(defaultCacheTime) * time.Second,
+			CacheTimeErrored:          time.Duration(erroredCacheTime) * time.Second,
+			CacheTimeShort:            time.Duration(shortCacheTime) * time.Second,
+			EnablePublishExpiryOffset: true,
+			PublishExpiryOffset:       time.Duration(publishExpiryOffset) * time.Second,
 		}
 
 		Convey("When the 'maxAge' function is called and there is a problem trying to retrieve a Cache Time resource", func() {
@@ -192,6 +193,59 @@ func TestMaxAgeInteractionWithLegacyCacheAPI(t *testing.T) {
 					Convey("Then it should return a default cache time", func() {
 						So(result, ShouldEqual, defaultCacheTime)
 					})
+				})
+			})
+		})
+	})
+}
+
+func TestMaxAgeWithPublishExpiryOffset(t *testing.T) {
+	Convey("Given a Legacy Cache API with some pre-configured cache time values", t, func() {
+		ctx := context.Background()
+
+		mux := http.NewServeMux()
+		mockLegacyCacheAPI := httptest.NewServer(mux)
+		defer mockLegacyCacheAPI.Close()
+
+		setMockResponseWithReleaseTime := func(releaseTime time.Time) {
+			mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+				body := fmt.Sprintf(`{"_id": "7fadfea5c8372c59c0d20599ff95b42a", "path": "/some-valid-path", "release_time": %q}`, releaseTime.Format(time.RFC3339))
+				_, _ = w.Write([]byte(body))
+			})
+		}
+
+		const defaultCacheTime = 100
+		const shortCacheTime = 3
+		const publishExpiryOffset = 15
+
+		cfg := &config.Config{
+			LegacyCacheAPIURL:   mockLegacyCacheAPI.URL,
+			CacheTimeDefault:    time.Duration(defaultCacheTime) * time.Second,
+			CacheTimeShort:      time.Duration(shortCacheTime) * time.Second,
+			PublishExpiryOffset: time.Duration(publishExpiryOffset) * time.Second,
+		}
+
+		Convey("And the requested resource has been recently published", func() {
+			veryRecentReleaseTime := time.Now().Add(-10 * time.Second)
+			secondsSinceRelease := time.Since(veryRecentReleaseTime).Seconds()
+			So(secondsSinceRelease, ShouldBeLessThan, publishExpiryOffset)
+			setMockResponseWithReleaseTime(veryRecentReleaseTime)
+
+			Convey("When the Publish Expiry Offset is toggled ON and the 'maxAge' function is called", func() {
+				cfg.EnablePublishExpiryOffset = true
+				result := maxAge(ctx, "/some-valid-url", cfg)
+
+				Convey("Then it should return a short cache time", func() {
+					So(result, ShouldEqual, shortCacheTime)
+				})
+			})
+
+			Convey("When the Publish Expiry Offset is toggled OFF and the 'maxAge' function is called", func() {
+				cfg.EnablePublishExpiryOffset = false
+				result := maxAge(ctx, "/some-valid-url", cfg)
+
+				Convey("Then it should return a default cache time", func() {
+					So(result, ShouldEqual, defaultCacheTime)
 				})
 			})
 		})

@@ -75,3 +75,9 @@ Feature: Set cache time
     Given the "/some-path" page was released recently
     When the Proxy receives a GET request for "/some-path"
     Then the response header "Cache-Control" should be "max-age=10"
+
+  Scenario: Return the default cache time when the page was released recently and the publish expiry offset is disabled
+    Given the "/some-path" page was released recently
+    And the Proxy has the publish expiry offset disabled
+    When the Proxy receives a GET request for "/some-path"
+    Then the response header "Cache-Control" should be "max-age=900"

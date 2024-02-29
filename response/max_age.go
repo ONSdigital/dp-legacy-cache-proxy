@@ -57,7 +57,7 @@ func maxAge(ctx context.Context, uri string, cfg *config.Config) int {
 		return int(cfg.CacheTimeDefault.Seconds())
 	}
 
-	if wasReleasedRecently(releaseTime, cfg.PublishExpiryOffset) {
+	if cfg.EnablePublishExpiryOffset && wasReleasedRecently(releaseTime, cfg.PublishExpiryOffset) {
 		return int(cfg.CacheTimeShort.Seconds())
 	}
 

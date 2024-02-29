@@ -36,6 +36,7 @@ func TestConfig(t *testing.T) {
 					CacheTimeErrored:           30 * time.Second,
 					CacheTimeLong:              4 * time.Hour,
 					CacheTimeShort:             10 * time.Second,
+					EnablePublishExpiryOffset:  false,
 					PublishExpiryOffset:        3 * time.Minute,
 				})
 			})
