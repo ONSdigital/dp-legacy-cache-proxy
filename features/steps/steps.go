@@ -14,6 +14,7 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	c.apiFeature.RegisterSteps(ctx)
 	c.babbageFeature.RegisterSteps(ctx)
 	c.legacyCacheAPIFeature.RegisterSteps(ctx)
+	c.releaseCalendarFeature.RegisterSteps(ctx)
 
 	ctx.Step(`^I should receive an empty response$`, c.iShouldReceiveAnEmptyResponse)
 	ctx.Step(`^I should receive the same, unmodified response from Babbage$`, c.iShouldReceiveTheSameUnmodifiedResponseFromBabbage)
