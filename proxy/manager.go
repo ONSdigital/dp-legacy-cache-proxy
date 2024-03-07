@@ -3,6 +3,7 @@ package proxy
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/ONSdigital/dp-legacy-cache-proxy/config"
 	"github.com/ONSdigital/dp-legacy-cache-proxy/response"
@@ -10,7 +11,7 @@ import (
 )
 
 func (proxy *Proxy) manage(ctx context.Context, w http.ResponseWriter, req *http.Request, cfg *config.Config) {
-	targetURL := cfg.BabbageURL + req.URL.String()
+	targetURL := getTargetURL(req.URL.String(), cfg)
 
 	proxyReq, err := http.NewRequestWithContext(ctx, req.Method, targetURL, req.Body)
 
@@ -24,7 +25,7 @@ func (proxy *Proxy) manage(ctx context.Context, w http.ResponseWriter, req *http
 	proxyReq.Header = req.Header
 
 	client := &http.Client{}
-	babbageResponse, err := client.Do(proxyReq)
+	serviceResponse, err := client.Do(proxyReq)
 
 	if err != nil {
 		log.Error(ctx, "error sending the proxy request", err)
@@ -33,10 +34,21 @@ func (proxy *Proxy) manage(ctx context.Context, w http.ResponseWriter, req *http
 	}
 
 	defer func() {
-		if closeErr := babbageResponse.Body.Close(); closeErr != nil {
+		if closeErr := serviceResponse.Body.Close(); closeErr != nil {
 			log.Error(ctx, "error closing the response body", closeErr)
 		}
 	}()
 
-	response.WriteResponse(ctx, w, babbageResponse, req, cfg)
+	response.WriteResponse(ctx, w, serviceResponse, req, cfg)
+}
+
+func IsReleaseCalendarURL(url string) bool {
+	return strings.HasPrefix(url, "/releases/")
+}
+
+func getTargetURL(requestURL string, cfg *config.Config) string {
+	if IsReleaseCalendarURL(requestURL) && cfg.EnableReleaseCalendar {
+		return cfg.RelCalURL + requestURL
+	}
+	return cfg.BabbageURL + requestURL
 }

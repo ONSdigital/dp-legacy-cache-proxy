@@ -16,15 +16,16 @@ import (
 
 type Component struct {
 	componenttest.ErrorFeature
-	svcList               *service.ExternalServiceList
-	svc                   *service.Service
-	errorChan             chan error
-	Config                *config.Config
-	HTTPServer            *http.Server
-	ServiceRunning        bool
-	apiFeature            *componenttest.APIFeature
-	babbageFeature        *BabbageFeature
-	legacyCacheAPIFeature *LegacyCacheAPIFeature
+	svcList                *service.ExternalServiceList
+	svc                    *service.Service
+	errorChan              chan error
+	Config                 *config.Config
+	HTTPServer             *http.Server
+	ServiceRunning         bool
+	apiFeature             *componenttest.APIFeature
+	babbageFeature         *BabbageFeature
+	legacyCacheAPIFeature  *LegacyCacheAPIFeature
+	releaseCalendarFeature *ReleaseCalendarFeature
 }
 
 func NewComponent() (*Component, error) {
@@ -42,9 +43,12 @@ func NewComponent() (*Component, error) {
 
 	c.babbageFeature = NewBabbageFeature()
 	c.legacyCacheAPIFeature = NewLegacyCacheAPIFeature()
+	c.releaseCalendarFeature = NewReleaseCalendarFeature()
 
 	c.Config.BabbageURL = c.babbageFeature.Server.URL
 	c.Config.LegacyCacheAPIURL = c.legacyCacheAPIFeature.Server.URL
+	c.Config.RelCalURL = c.releaseCalendarFeature.Server.URL
+	c.Config.EnableReleaseCalendar = true
 	c.Config.EnablePublishExpiryOffset = true
 
 	initMock := &mock.InitialiserMock{
@@ -70,6 +74,7 @@ func (c *Component) Close() error {
 	if c.svc != nil && c.ServiceRunning {
 		c.babbageFeature.Server.Close()
 		c.legacyCacheAPIFeature.Server.Close()
+		c.releaseCalendarFeature.Server.Close()
 		if err := c.svc.Close(context.Background()); err != nil {
 			return err
 		}

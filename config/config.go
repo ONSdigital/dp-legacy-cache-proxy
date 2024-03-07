@@ -16,6 +16,8 @@ type Config struct {
 	OTExporterOTLPEndpoint     string        `envconfig:"OTEL_EXPORTER_OTLP_ENDPOINT"`
 	OTServiceName              string        `envconfig:"OTEL_SERVICE_NAME"`
 	BabbageURL                 string        `envconfig:"BABBAGE_URL"`
+	RelCalURL                  string        `envconfig:"RELEASE_CALENDAR_URL"`
+	EnableReleaseCalendar      bool          `envconfig:"ENABLE_RELEASE_CALENDAR"`
 	LegacyCacheAPIURL          string        `envconfig:"LEGACY_CACHE_API_URL"`
 	CacheTimeDefault           time.Duration `envconfig:"CACHE_TIME_DEFAULT"`
 	CacheTimeErrored           time.Duration `envconfig:"CACHE_TIME_ERRORED"`
@@ -44,6 +46,8 @@ func Get() (*Config, error) {
 		OTServiceName:              "dp-legacy-cache-proxy",
 		BabbageURL:                 "http://localhost:8080",
 		LegacyCacheAPIURL:          "http://localhost:29100",
+		RelCalURL:                  "http://localhost:27700",
+		EnableReleaseCalendar:      false,
 		CacheTimeDefault:           15 * time.Minute,
 		CacheTimeErrored:           30 * time.Second,
 		CacheTimeLong:              4 * time.Hour,
