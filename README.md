@@ -25,6 +25,7 @@ Proxy for handling the cache for pages within the legacy CMS
 | BABBAGE_URL                  | http://localhost:8080  | Babbage address, where all the incoming requests are forwarded to                                                                    |
 | LEGACY_CACHE_API_URL         | http://localhost:29100 | Legacy Cache API address                                                                                                             |
 | RELEASE_CALENDAR_URL         | http://localhost:27700 | Release calendar frontend controller address                                                                                         |
+| ENABLE_RELEASE_CALENDAR      | false                  | Flag to enable `/releases/{uri:.*}` URLs to go through dp-frontend-release-calendar instead.                                         |
 | CACHE_TIME_DEFAULT           | 15m                    | Default value for the `max-age` directive of the `Cache-Control` header (`time.Duration` format)                                     |
 | CACHE_TIME_ERRORED           | 30s                    | Errored value for the `max-age` directive of the `Cache-Control` header (`time.Duration` format)                                     |
 | CACHE_TIME_LONG              | 4h                     | Long value for the `max-age` directive of the `Cache-Control` header (`time.Duration` format)                                        |

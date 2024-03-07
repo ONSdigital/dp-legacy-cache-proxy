@@ -48,6 +48,7 @@ func NewComponent() (*Component, error) {
 	c.Config.BabbageURL = c.babbageFeature.Server.URL
 	c.Config.LegacyCacheAPIURL = c.legacyCacheAPIFeature.Server.URL
 	c.Config.RelCalURL = c.releaseCalendarFeature.Server.URL
+	c.Config.EnableReleaseCalendar = true
 	c.Config.EnablePublishExpiryOffset = true
 
 	initMock := &mock.InitialiserMock{
