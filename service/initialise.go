@@ -3,9 +3,8 @@ package service
 import (
 	"net/http"
 
-	"github.com/ONSdigital/dp-legacy-cache-proxy/config"
-
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
+	"github.com/ONSdigital/dp-legacy-cache-proxy/config"
 	dphttp "github.com/ONSdigital/dp-net/v2/http"
 )
 
@@ -27,8 +26,8 @@ func NewServiceList(initialiser Initialiser) *ExternalServiceList {
 type Init struct{}
 
 // GetHTTPServer creates an http server
-func (e *ExternalServiceList) GetHTTPServer(bindAddr string, router http.Handler) HTTPServer {
-	s := e.Init.DoGetHTTPServer(bindAddr, router)
+func (e *ExternalServiceList) GetHTTPServer(cfg *config.Config, bindAddr string, router http.Handler) HTTPServer {
+	s := e.Init.DoGetHTTPServer(cfg, bindAddr, router)
 	return s
 }
 
@@ -47,8 +46,10 @@ func (e *ExternalServiceList) GetRequestMiddleware() RequestMiddleware {
 }
 
 // DoGetHTTPServer creates an HTTP Server with the provided bind address and router
-func (e *Init) DoGetHTTPServer(bindAddr string, router http.Handler) HTTPServer {
+func (e *Init) DoGetHTTPServer(cfg *config.Config, bindAddr string, router http.Handler) HTTPServer {
 	s := dphttp.NewServer(bindAddr, router)
+	s.Server.ReadTimeout = cfg.ReadTimeout
+	s.Server.WriteTimeout = cfg.WriteTimeout
 	s.HandleOSSignals = false
 	return s
 }

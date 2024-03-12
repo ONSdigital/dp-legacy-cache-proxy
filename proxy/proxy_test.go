@@ -13,8 +13,8 @@ import (
 
 func TestSetup(t *testing.T) {
 	Convey("Given a Proxy instance", t, func() {
-		r := mux.NewRouter()
 		ctx := context.Background()
+		r := mux.NewRouter()
 		cfg := &config.Config{}
 		legacyCacheProxy := Setup(ctx, r, cfg)
 

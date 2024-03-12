@@ -39,8 +39,10 @@ func writeResponse(ctx context.Context, w http.ResponseWriter, serviceResponse *
 	// Copy the service response's status code
 	w.WriteHeader(serviceResponse.StatusCode)
 
+	buf := make([]byte, 128*1024)
+
 	// Copy the service response's body
-	if _, err := io.Copy(w, serviceResponse.Body); err != nil {
+	if _, err := io.CopyBuffer(w, serviceResponse.Body, buf); err != nil {
 		log.Error(ctx, "error copying the proxy response's body", err)
 		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 		return

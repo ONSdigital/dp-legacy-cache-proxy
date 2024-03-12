@@ -102,7 +102,7 @@ func (c *Component) DoGetHealthcheckOk(_ *config.Config, _, _, _ string) (servic
 	}, nil
 }
 
-func (c *Component) DoGetHTTPServer(bindAddr string, router http.Handler) service.HTTPServer {
+func (c *Component) DoGetHTTPServer(_ *config.Config, bindAddr string, router http.Handler) service.HTTPServer {
 	c.HTTPServer = &http.Server{
 		ReadHeaderTimeout: 3 * time.Second,
 		Addr:              bindAddr,

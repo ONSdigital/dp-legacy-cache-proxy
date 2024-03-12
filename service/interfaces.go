@@ -15,7 +15,7 @@ import (
 
 // Initialiser defines the methods to initialise external services
 type Initialiser interface {
-	DoGetHTTPServer(bindAddr string, router http.Handler) HTTPServer
+	DoGetHTTPServer(cfg *config.Config, bindAddr string, router http.Handler) HTTPServer
 	DoGetHealthCheck(cfg *config.Config, buildTime, gitCommit, version string) (HealthChecker, error)
 	DoGetRequestMiddleware() RequestMiddleware
 }

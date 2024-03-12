@@ -25,6 +25,8 @@ type Config struct {
 	CacheTimeShort             time.Duration `envconfig:"CACHE_TIME_SHORT"`
 	EnablePublishExpiryOffset  bool          `envconfig:"ENABLE_PUBLISH_EXPIRY_OFFSET"`
 	PublishExpiryOffset        time.Duration `envconfig:"PUBLISH_EXPIRY_OFFSET"`
+	ReadTimeout                time.Duration `envconfig:"READ_TIMEOUT"`
+	WriteTimeout               time.Duration `envconfig:"WRITE_TIMEOUT"`
 }
 
 var cfg *Config
@@ -54,6 +56,8 @@ func Get() (*Config, error) {
 		CacheTimeShort:             10 * time.Second,
 		EnablePublishExpiryOffset:  false,
 		PublishExpiryOffset:        3 * time.Minute,
+		ReadTimeout:                15 * time.Second,
+		WriteTimeout:               30 * time.Second,
 	}
 
 	return cfg, envconfig.Process("", cfg)

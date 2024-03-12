@@ -33,9 +33,12 @@ All the requests that users make to Babbage (or any other services that rely on 
 | CACHE_TIME_SHORT             | 10s                    | Short value for the `max-age` directive of the `Cache-Control` header (`time.Duration` format)                                       |
 | ENABLE_PUBLISH_EXPIRY_OFFSET | false                  | Determines if publish expiry offset is used which enables a shorter cache time for recently published content.                       |
 | PUBLISH_EXPIRY_OFFSET        | 3m                     | Period of time after a release in which the proxy needs to return a short value for the `max-age` directive (`time.Duration` format) |
+| READ_TIMEOUT                 | 15s                    | Maximum time the server will wait for a client to send a complete request.                                                           |
+| WRITE_TIMEOUT                | 30s                    | Maximum time the server will wait while trying to write a response to the client                                                     |
 
 ### Auto-Deployment of secrets
-Functionality has been added to the nomad plan so that when the secrets are deployed to Vault, this will automatically cause Nomad to trigger a redeployment of the application to pick up the new secrets. Please note that this functionality does not appear to work with the current nomad/vault versions, but if these are upgraded it may then become functional.  
+
+Functionality has been added to the nomad plan so that when the secrets are deployed to Vault, this will automatically cause Nomad to trigger a redeployment of the application to pick up the new secrets. Please note that this functionality does not appear to work with the current nomad/vault versions, but if these are upgraded it may then become functional.
 
 ### Contributing
 

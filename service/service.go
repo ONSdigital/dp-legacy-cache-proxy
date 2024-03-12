@@ -34,7 +34,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	// TODO: Any middleware will require 'otelhttp.NewMiddleware(cfg.OTServiceName),' included for Open Telemetry
 
-	s := serviceList.GetHTTPServer(cfg.BindAddr, r)
+	s := serviceList.GetHTTPServer(cfg, cfg.BindAddr, r)
 
 	// TODO: Add other(s) to serviceList here
 
@@ -50,7 +50,6 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	}
 
 	r.StrictSlash(true).Path("/health").HandlerFunc(hc.Handler)
-
 	// The proxy needs to be set up after the HealthCheck route has been added to the router: in the Setup method, the
 	// proxy adds a catch-all route, so any other routes added after that one will never be reachable.
 	p := proxy.Setup(ctx, r, cfg)

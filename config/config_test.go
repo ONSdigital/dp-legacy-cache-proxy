@@ -40,6 +40,8 @@ func TestConfig(t *testing.T) {
 					CacheTimeShort:             10 * time.Second,
 					EnablePublishExpiryOffset:  false,
 					PublishExpiryOffset:        3 * time.Minute,
+					ReadTimeout:                15 * time.Second,
+					WriteTimeout:               30 * time.Second,
 				})
 			})
 

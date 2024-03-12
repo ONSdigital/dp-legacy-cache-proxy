@@ -4,11 +4,10 @@
 package mock
 
 import (
-	"net/http"
-	"sync"
-
 	"github.com/ONSdigital/dp-legacy-cache-proxy/config"
 	"github.com/ONSdigital/dp-legacy-cache-proxy/service"
+	"net/http"
+	"sync"
 )
 
 // Ensure, that InitialiserMock does implement service.Initialiser.
@@ -21,7 +20,7 @@ var _ service.Initialiser = &InitialiserMock{}
 //
 //		// make and configure a mocked service.Initialiser
 //		mockedInitialiser := &InitialiserMock{
-//			DoGetHTTPServerFunc: func(bindAddr string, router http.Handler) service.HTTPServer {
+//			DoGetHTTPServerFunc: func(cfg *config.Config, bindAddr string, router http.Handler) service.HTTPServer {
 //				panic("mock out the DoGetHTTPServer method")
 //			},
 //			DoGetHealthCheckFunc: func(cfg *config.Config, buildTime string, gitCommit string, version string) (service.HealthChecker, error) {
@@ -38,7 +37,7 @@ var _ service.Initialiser = &InitialiserMock{}
 //	}
 type InitialiserMock struct {
 	// DoGetHTTPServerFunc mocks the DoGetHTTPServer method.
-	DoGetHTTPServerFunc func(bindAddr string, router http.Handler) service.HTTPServer
+	DoGetHTTPServerFunc func(cfg *config.Config, bindAddr string, router http.Handler) service.HTTPServer
 
 	// DoGetHealthCheckFunc mocks the DoGetHealthCheck method.
 	DoGetHealthCheckFunc func(cfg *config.Config, buildTime string, gitCommit string, version string) (service.HealthChecker, error)
@@ -50,6 +49,8 @@ type InitialiserMock struct {
 	calls struct {
 		// DoGetHTTPServer holds details about calls to the DoGetHTTPServer method.
 		DoGetHTTPServer []struct {
+			// Cfg is the cfg argument value.
+			Cfg *config.Config
 			// BindAddr is the bindAddr argument value.
 			BindAddr string
 			// Router is the router argument value.
@@ -76,21 +77,23 @@ type InitialiserMock struct {
 }
 
 // DoGetHTTPServer calls DoGetHTTPServerFunc.
-func (mock *InitialiserMock) DoGetHTTPServer(bindAddr string, router http.Handler) service.HTTPServer {
+func (mock *InitialiserMock) DoGetHTTPServer(cfg *config.Config, bindAddr string, router http.Handler) service.HTTPServer {
 	if mock.DoGetHTTPServerFunc == nil {
 		panic("InitialiserMock.DoGetHTTPServerFunc: method is nil but Initialiser.DoGetHTTPServer was just called")
 	}
 	callInfo := struct {
+		Cfg      *config.Config
 		BindAddr string
 		Router   http.Handler
 	}{
+		Cfg:      cfg,
 		BindAddr: bindAddr,
 		Router:   router,
 	}
 	mock.lockDoGetHTTPServer.Lock()
 	mock.calls.DoGetHTTPServer = append(mock.calls.DoGetHTTPServer, callInfo)
 	mock.lockDoGetHTTPServer.Unlock()
-	return mock.DoGetHTTPServerFunc(bindAddr, router)
+	return mock.DoGetHTTPServerFunc(cfg, bindAddr, router)
 }
 
 // DoGetHTTPServerCalls gets all the calls that were made to DoGetHTTPServer.
@@ -98,10 +101,12 @@ func (mock *InitialiserMock) DoGetHTTPServer(bindAddr string, router http.Handle
 //
 //	len(mockedInitialiser.DoGetHTTPServerCalls())
 func (mock *InitialiserMock) DoGetHTTPServerCalls() []struct {
+	Cfg      *config.Config
 	BindAddr string
 	Router   http.Handler
 } {
 	var calls []struct {
+		Cfg      *config.Config
 		BindAddr string
 		Router   http.Handler
 	}

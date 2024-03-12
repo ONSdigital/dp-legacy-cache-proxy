@@ -14,13 +14,13 @@ type Proxy struct {
 }
 
 // Setup function sets up the proxy and returns a Proxy
-func Setup(ctx context.Context, r *mux.Router, cfg *config.Config) *Proxy {
+func Setup(_ context.Context, r *mux.Router, cfg *config.Config) *Proxy {
 	proxy := &Proxy{
 		Router: r,
 	}
 
 	r.PathPrefix("/").Name("Proxy Catch-All").HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		proxy.manage(ctx, w, req, cfg)
+		proxy.manage(req.Context(), w, req, cfg)
 	})
 	return proxy
 }

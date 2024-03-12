@@ -22,7 +22,6 @@ func TestProxyHandleRequestOK(t *testing.T) {
 			}
 		}))
 		defer mockBabbageServer.Close()
-
 		ctx := context.Background()
 		router := mux.NewRouter()
 		cfg := &config.Config{BabbageURL: mockBabbageServer.URL}
