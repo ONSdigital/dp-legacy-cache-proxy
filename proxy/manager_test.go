@@ -42,6 +42,38 @@ func TestProxyHandleRequestOK(t *testing.T) {
 	})
 }
 
+func TestProxyHandleRedirect(t *testing.T) {
+	Convey("Given a Proxy and a Babbage server", t, func() {
+		redirURL := "http://over/by/here"
+		mockBabbageServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Location", redirURL)
+			w.WriteHeader(http.StatusFound)
+			_, err := w.Write([]byte("Mock Babbage Response"))
+			if err != nil {
+				panic(err)
+			}
+		}))
+		defer mockBabbageServer.Close()
+		ctx := context.Background()
+		router := mux.NewRouter()
+		cfg := &config.Config{BabbageURL: mockBabbageServer.URL}
+
+		legacyCacheProxy := Setup(ctx, router, cfg)
+
+		Convey("When a request to /ons/* is sent", func() {
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodGet, "/ons/test-endpoint", http.NoBody)
+			legacyCacheProxy.Router.ServeHTTP(w, r)
+
+			Convey("Then the proxy response should match the Babbage response", func() {
+				So(w.Code, ShouldEqual, http.StatusFound)
+				So(w.Body.String(), ShouldEqual, "Mock Babbage Response")
+				So(w.Header().Get("Location"), ShouldEqual, redirURL)
+			})
+		})
+	})
+}
+
 func TestProxyHandleRequestError(t *testing.T) {
 	Convey("Given a Proxy with an invalid Babbage URL configuration", t, func() {
 		ctx := context.Background()

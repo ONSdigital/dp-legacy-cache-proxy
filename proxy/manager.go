@@ -24,7 +24,11 @@ func (proxy *Proxy) manage(ctx context.Context, w http.ResponseWriter, req *http
 	// Copy headers from original request to proxy request
 	proxyReq.Header = req.Header
 
-	client := &http.Client{}
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
 	serviceResponse, err := client.Do(proxyReq)
 
 	if err != nil {
