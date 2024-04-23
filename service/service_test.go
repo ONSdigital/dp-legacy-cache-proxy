@@ -31,10 +31,12 @@ var (
 	errHealthcheck = errors.New("healthCheck error")
 )
 
+// nolint:revive // param names give context here.
 var funcDoGetHealthcheckErr = func(cfg *config.Config, buildTime string, gitCommit string, version string) (service.HealthChecker, error) {
 	return nil, errHealthcheck
 }
 
+// nolint:revive // param names give context here.
 var funcDoGetHTTPServerNil = func(cfg *config.Config, bindAddr string, router http.Handler) service.HTTPServer {
 	return nil
 }
@@ -44,6 +46,7 @@ func TestRun(t *testing.T) {
 		cfg, err := config.Get()
 		So(err, ShouldBeNil)
 
+		// nolint:revive // param names give context here.
 		hcMock := &mock.HealthCheckerMock{
 			AddCheckFunc: func(name string, checker healthcheck.Checker) error { return nil },
 			StartFunc:    func(ctx context.Context) {},
@@ -64,14 +67,17 @@ func TestRun(t *testing.T) {
 			},
 		}
 
+		// nolint:revive // param names give context here.
 		funcDoGetHealthcheckOk := func(cfg *config.Config, buildTime string, gitCommit string, version string) (service.HealthChecker, error) {
 			return hcMock, nil
 		}
 
+		// nolint:revive // param names give context here.
 		funcDoGetHTTPServer := func(cfg *config.Config, bindAddr string, router http.Handler) service.HTTPServer {
 			return serverMock
 		}
 
+		// nolint:revive // param names give context here.
 		funcDoGetFailingHTTPServer := func(cfg *config.Config, bindAddr string, router http.Handler) service.HTTPServer {
 			return failingServerMock
 		}
@@ -130,6 +136,7 @@ func TestRun(t *testing.T) {
 
 			Convey("Then the proxy's catch-all route is the one with the lowest precedence", func() {
 				var lastRouteName string
+				// nolint:revive // param names give context here.
 				_ = svc.Router.Walk(func(route *mux.Route, router *mux.Router, ancestors []*mux.Route) error {
 					lastRouteName = route.GetName()
 					return nil
@@ -208,6 +215,7 @@ func TestClose(t *testing.T) {
 		hcStopped := false
 
 		// healthcheck Stop does not depend on any other service being closed/stopped
+		// nolint:revive // param names give context here.
 		hcMock := &mock.HealthCheckerMock{
 			AddCheckFunc: func(name string, checker healthcheck.Checker) error { return nil },
 			StartFunc:    func(ctx context.Context) {},
@@ -215,6 +223,7 @@ func TestClose(t *testing.T) {
 		}
 
 		// server Shutdown will fail if healthcheck is not stopped
+		// nolint:revive // param names give context here.
 		serverMock := &mock.HTTPServerMock{
 			ListenAndServeFunc: func() error { return nil },
 			ShutdownFunc: func(ctx context.Context) error {
@@ -226,6 +235,7 @@ func TestClose(t *testing.T) {
 		}
 
 		Convey("Closing the service results in all the dependencies being closed in the expected order", func() {
+			// nolint:revive // param names give context here.
 			initMock := &mock.InitialiserMock{
 				DoGetHTTPServerFunc: func(cfg *config.Config, bindAddr string, router http.Handler) service.HTTPServer { return serverMock },
 				DoGetHealthCheckFunc: func(cfg *config.Config, buildTime string, gitCommit string, version string) (service.HealthChecker, error) {
@@ -246,13 +256,14 @@ func TestClose(t *testing.T) {
 		})
 
 		Convey("If services fail to stop, the Close operation tries to close all dependencies and returns an error", func() {
+			// nolint:revive // param names give context here.
 			failingserverMock := &mock.HTTPServerMock{
 				ListenAndServeFunc: func() error { return nil },
 				ShutdownFunc: func(ctx context.Context) error {
 					return errors.New("Failed to stop http server")
 				},
 			}
-
+			// nolint:revive // param names give context here.
 			initMock := &mock.InitialiserMock{
 				DoGetHTTPServerFunc: func(cfg *config.Config, bindAddr string, router http.Handler) service.HTTPServer {
 					return failingserverMock
@@ -277,6 +288,7 @@ func TestClose(t *testing.T) {
 
 		Convey("If service times out while shutting down, the Close operation fails with the expected error", func() {
 			cfg.GracefulShutdownTimeout = 1 * time.Millisecond
+			// nolint:revive // param names give context here.
 			timeoutServerMock := &mock.HTTPServerMock{
 				ListenAndServeFunc: func() error { return nil },
 				ShutdownFunc: func(ctx context.Context) error {

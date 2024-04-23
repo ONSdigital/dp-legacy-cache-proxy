@@ -25,6 +25,7 @@ func (proxy *Proxy) manage(ctx context.Context, w http.ResponseWriter, req *http
 	proxyReq.Header = req.Header
 
 	client := &http.Client{
+		// nolint:revive // param names give context here.
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},

@@ -13,7 +13,7 @@ import (
 
 func TestProxyHandleRequestOK(t *testing.T) {
 	Convey("Given a Proxy and a Babbage server", t, func() {
-		mockBabbageServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockBabbageServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("mock-header", "test")
 			w.WriteHeader(http.StatusOK)
 			_, err := w.Write([]byte("Mock Babbage Response"))
@@ -45,7 +45,7 @@ func TestProxyHandleRequestOK(t *testing.T) {
 func TestProxyHandleRedirect(t *testing.T) {
 	Convey("Given a Proxy and a Babbage server", t, func() {
 		redirURL := "http://over/by/here"
-		mockBabbageServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockBabbageServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			w.Header().Set("Location", redirURL)
 			w.WriteHeader(http.StatusFound)
 			_, err := w.Write([]byte("Mock Babbage Response"))
