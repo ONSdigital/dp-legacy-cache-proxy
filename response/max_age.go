@@ -15,12 +15,17 @@ import (
 const maxAgeErrorMessage = "error calculating the max-age directive"
 
 var versionedURIRegexp = regexp.MustCompile(`/previous/v\d+`)
+var searchPageRegexp = regexp.MustCompile(`\/(allmethodologies|releasecalendar|timeseriestool|datalist|publications|staticlist|topicspecificmethodology|relateddata|alladhocs|publishedrequests)$`)
 
 func maxAge(ctx context.Context, uri string, cfg *config.Config) int {
 	log.Info(ctx, "Calculating max-age for "+uri)
 
 	if isLegacyAssetURI(uri) || isOnsURI(uri) || isVersionedURI(uri) {
 		return int(cfg.CacheTimeLong.Seconds())
+	}
+
+	if isSearchPageURI(uri) {
+		return int(cfg.CacheTimeShort.Seconds())
 	}
 
 	pagePath, err := getPagePath(ctx, uri)
@@ -86,4 +91,8 @@ func isVersionedURI(uri string) bool {
 
 func wasReleasedRecently(releaseTime time.Time, offset time.Duration) bool {
 	return releaseTime.Add(offset).After(time.Now())
+}
+
+func isSearchPageURI(uri string) bool {
+	return searchPageRegexp.MatchString(uri)
 }
