@@ -27,6 +27,7 @@ type Config struct {
 	PublishExpiryOffset        time.Duration `envconfig:"PUBLISH_EXPIRY_OFFSET"`
 	ReadTimeout                time.Duration `envconfig:"READ_TIMEOUT"`
 	WriteTimeout               time.Duration `envconfig:"WRITE_TIMEOUT"`
+	OtelEnabled                bool          `envconfig:"OTEL_ENABLED"`
 }
 
 var cfg *Config
@@ -58,6 +59,7 @@ func Get() (*Config, error) {
 		PublishExpiryOffset:        3 * time.Minute,
 		ReadTimeout:                15 * time.Second,
 		WriteTimeout:               30 * time.Second,
+		OtelEnabled:                false,
 	}
 
 	return cfg, envconfig.Process("", cfg)

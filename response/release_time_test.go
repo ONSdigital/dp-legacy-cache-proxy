@@ -13,7 +13,7 @@ import (
 func TestGetReleaseTime(t *testing.T) {
 	Convey("Given a Legacy Cache API", t, func() {
 		var writeMockResponse func(w http.ResponseWriter) error
-		mockLegacyCacheAPI := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		mockLegacyCacheAPI := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			err := writeMockResponse(w)
 			if err != nil {
 				t.Fatal("error setting the mock server response body", err)

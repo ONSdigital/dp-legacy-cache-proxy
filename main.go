@@ -9,10 +9,9 @@ import (
 
 	"github.com/ONSdigital/dp-legacy-cache-proxy/config"
 	"github.com/ONSdigital/dp-legacy-cache-proxy/service"
+	dpotelgo "github.com/ONSdigital/dp-otel-go"
 	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
-
-	dpotelgo "github.com/ONSdigital/dp-otel-go"
 )
 
 const serviceName = "dp-legacy-cache-proxy"
@@ -52,21 +51,24 @@ func run(ctx context.Context) error {
 		return errors.Wrap(err, "error getting configuration")
 	}
 
-	// Set up OpenTelemetry
-	otelConfig := dpotelgo.Config{
-		OtelServiceName:          cfg.OTServiceName,
-		OtelExporterOtlpEndpoint: cfg.OTExporterOTLPEndpoint,
-		OtelBatchTimeout:         cfg.OTBatchTimeout,
-	}
+	if cfg.OtelEnabled {
+		// Set up OpenTelemetry
+		otelConfig := dpotelgo.Config{
+			OtelServiceName:          cfg.OTServiceName,
+			OtelExporterOtlpEndpoint: cfg.OTExporterOTLPEndpoint,
+			OtelBatchTimeout:         cfg.OTBatchTimeout,
+		}
 
-	otelShutdown, oErr := dpotelgo.SetupOTelSDK(ctx, otelConfig)
-	if oErr != nil {
-		log.Fatal(ctx, "error setting up OpenTelemetry - hint: ensure OTEL_EXPORTER_OTLP_ENDPOINT is set", oErr)
+		otelShutdown, oErr := dpotelgo.SetupOTelSDK(ctx, otelConfig)
+		if oErr != nil {
+			log.Fatal(ctx, "error setting up OpenTelemetry - hint: ensure OTEL_EXPORTER_OTLP_ENDPOINT is set", oErr)
+			return oErr
+		}
+		// Handle shutdown properly so nothing leaks.
+		defer func() {
+			err = goerrors.Join(err, otelShutdown(context.Background()))
+		}()
 	}
-	// Handle shutdown properly so nothing leaks.
-	defer func() {
-		err = goerrors.Join(err, otelShutdown(context.Background()))
-	}()
 
 	// Start service
 	svc, err := service.Run(ctx, cfg, svcList, BuildTime, GitCommit, Version, svcErrors)

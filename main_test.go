@@ -24,12 +24,14 @@ func (f *ComponentTest) InitializeScenario(ctx *godog.ScenarioContext) {
 		panic(err)
 	}
 
+	// nolint:revive // param names give context here.
 	ctx.Before(func(ctx context.Context, sc *godog.Scenario) (context.Context, error) {
 		component.Reset()
 
 		return ctx, nil
 	})
 
+	// nolint:revive // param names give context here.
 	ctx.After(func(ctx context.Context, sc *godog.Scenario, err error) (context.Context, error) {
 		if closeErr := component.Close(); closeErr != nil {
 			panic(closeErr)
@@ -42,7 +44,7 @@ func (f *ComponentTest) InitializeScenario(ctx *godog.ScenarioContext) {
 }
 
 func (f *ComponentTest) InitializeTestSuite(_ *godog.TestSuiteContext) {
-
+	// Add setup & teardown steps for whole test suite here if appropriate.
 }
 
 func TestComponent(t *testing.T) {

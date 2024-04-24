@@ -22,7 +22,7 @@ func NewBabbageFeature() *BabbageFeature {
 		Headers: make(map[string]string),
 	}
 
-	f.Server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	f.Server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		for headerName, headerValue := range f.Headers {
 			w.Header().Set(headerName, headerValue)
 		}
