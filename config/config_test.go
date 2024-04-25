@@ -42,6 +42,7 @@ func TestConfig(t *testing.T) {
 					PublishExpiryOffset:        3 * time.Minute,
 					ReadTimeout:                15 * time.Second,
 					WriteTimeout:               30 * time.Second,
+					OtelEnabled:                false,
 				})
 			})
 

@@ -62,6 +62,34 @@ func TestMaxAgeLongCacheTime(t *testing.T) {
 	})
 }
 
+func TestMaxAgeShortCacheTime(t *testing.T) {
+	Convey("Given a list of URIs and a pre-configured short cache time", t, func() {
+		ctx := context.Background()
+		const shortCacheTime = 5
+		cfg := &config.Config{
+			CacheTimeShort: time.Duration(shortCacheTime) * time.Second,
+		}
+
+		searchURIs := []string{
+			"/releasecalendar",
+			"/publications",
+			"/economy/datalist",
+			"/business/anotherbusiness/allmethodologies",
+			"/timeseriestool",
+		}
+
+		Convey("When the 'maxAge' function is called", func() {
+			for _, uri := range searchURIs {
+				result := maxAge(ctx, uri, cfg)
+
+				Convey("Then it should return a short cache time for the following URI: "+uri, func() {
+					So(result, ShouldEqual, shortCacheTime)
+				})
+			}
+		})
+	})
+}
+
 func TestMaxAgeInteractionWithLegacyCacheAPI(t *testing.T) {
 	Convey("Given a Legacy Cache API and some pre-configured cache time values", t, func() {
 		ctx := context.Background()
@@ -71,19 +99,19 @@ func TestMaxAgeInteractionWithLegacyCacheAPI(t *testing.T) {
 		defer mockLegacyCacheAPI.Close()
 
 		setMockResponseBody := func(body string) {
-			mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 				_, _ = w.Write([]byte(body))
 			})
 		}
 
 		setMockResponseStatusCode := func(statusCode int) {
-			mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 				w.WriteHeader(statusCode)
 			})
 		}
 
 		setMockResponseWithReleaseTime := func(releaseTime time.Time) {
-			mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 				body := fmt.Sprintf(`{"_id": "7fadfea5c8372c59c0d20599ff95b42a", "path": "/some-valid-path", "release_time": %q}`, releaseTime.Format(time.RFC3339))
 				_, _ = w.Write([]byte(body))
 			})
@@ -208,7 +236,7 @@ func TestMaxAgeWithPublishExpiryOffset(t *testing.T) {
 		defer mockLegacyCacheAPI.Close()
 
 		setMockResponseWithReleaseTime := func(releaseTime time.Time) {
-			mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
 				body := fmt.Sprintf(`{"_id": "7fadfea5c8372c59c0d20599ff95b42a", "path": "/some-valid-path", "release_time": %q}`, releaseTime.Format(time.RFC3339))
 				_, _ = w.Write([]byte(body))
 			})

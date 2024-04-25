@@ -41,6 +41,17 @@ Feature: Set cache time
     | /fonts/open-sans-regular/OpenSans-Regular-webfont.woff2 |
     | /favicon.ico                                            |
 
+  Scenario Outline: Search URI should have a short cache time
+    When the Proxy receives a GET request for "<search-uri>"
+    Then the response header "Cache-Control" should be "max-age=10"
+  Examples:
+    | search-uri                                              |
+    | /releasecalendar                                        |
+    | /timeseriestool                                         |
+    | /economy/publications                                   |
+    | /business/business/business/datalist                    |
+    | /anothertopic/staticlist                                |
+
   Scenario: Return the errored cache time when the Legacy Cache API returns an error
     Given the Legacy Cache API has an error
     When the Proxy receives a GET request for "/some-path"

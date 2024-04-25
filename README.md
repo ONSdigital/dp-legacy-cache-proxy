@@ -15,7 +15,7 @@ All the requests that users make to Babbage (or any other services that rely on 
 ### Configuration
 
 | Environment variable         | Default                | Description                                                                                                                          |
-| ---------------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+|------------------------------|------------------------|--------------------------------------------------------------------------------------------------------------------------------------|
 | BIND_ADDR                    | :29200                 | The host and port to bind to                                                                                                         |
 | GRACEFUL_SHUTDOWN_TIMEOUT    | 5s                     | The graceful shutdown timeout in seconds (`time.Duration` format)                                                                    |
 | HEALTHCHECK_INTERVAL         | 30s                    | Time between self-healthchecks (`time.Duration` format)                                                                              |
@@ -23,6 +23,7 @@ All the requests that users make to Babbage (or any other services that rely on 
 | OTEL_BATCH_TIMEOUT           | 5s                     | Time duration after which a batch will be sent regardless of size (`time.Duration` format)                                           |
 | OTEL_EXPORTER_OTLP_ENDPOINT  | localhost:4317         | OpenTelemetry Exporter address                                                                                                       |
 | OTEL_SERVICE_NAME            | dp-legacy-cache-proxy  | The name of this service in OpenTelemetry                                                                                            |
+| OTEL_ENABLED                 | false                  | Turn OTEL on / off                                                                                                                   |
 | BABBAGE_URL                  | http://localhost:8080  | Babbage address, where all the incoming requests are forwarded to                                                                    |
 | LEGACY_CACHE_API_URL         | http://localhost:29100 | Legacy Cache API address                                                                                                             |
 | RELEASE_CALENDAR_URL         | http://localhost:27700 | Release calendar frontend controller address                                                                                         |

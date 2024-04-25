@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
-	// "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 // Service contains all the configs, server and clients to run the proxy
@@ -28,13 +28,20 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	log.Info(ctx, "using service configuration", log.Data{"config": cfg})
 
-	r := mux.NewRouter()
-	r.Use(otelmux.Middleware(cfg.OTServiceName))
-	r.Use(serviceList.Init.DoGetRequestMiddleware().GetMiddlewareFunction())
+	router := mux.NewRouter()
+
+	var server HTTPServer
+
+	if cfg.OtelEnabled {
+		otelHandler := otelhttp.NewHandler(router, "/")
+		router.Use(otelmux.Middleware(cfg.OTServiceName))
+		server = serviceList.GetHTTPServer(cfg, cfg.BindAddr, otelHandler)
+	} else {
+		server = serviceList.GetHTTPServer(cfg, cfg.BindAddr, router)
+	}
 
 	// TODO: Any middleware will require 'otelhttp.NewMiddleware(cfg.OTServiceName),' included for Open Telemetry
-
-	s := serviceList.GetHTTPServer(cfg, cfg.BindAddr, r)
+	router.Use(serviceList.Init.DoGetRequestMiddleware().GetMiddlewareFunction())
 
 	// TODO: Add other(s) to serviceList here
 
@@ -49,27 +56,27 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		return nil, errors.Wrap(err, "unable to register checkers")
 	}
 
-	r.StrictSlash(true).Path("/health").HandlerFunc(hc.Handler)
+	router.StrictSlash(true).Path("/health").HandlerFunc(hc.Handler)
 	// The proxy needs to be set up after the HealthCheck route has been added to the router: in the Setup method, the
 	// proxy adds a catch-all route, so any other routes added after that one will never be reachable.
-	p := proxy.Setup(ctx, r, cfg)
+	p := proxy.Setup(ctx, router, cfg)
 
 	hc.Start(ctx)
 
 	// Run the http server in a new go-routine
 	go func() {
-		if err := s.ListenAndServe(); err != nil {
+		if err := server.ListenAndServe(); err != nil {
 			svcErrors <- errors.Wrap(err, "failure in http listen and serve")
 		}
 	}()
 
 	return &Service{
 		Config:      cfg,
-		Router:      r,
+		Router:      router,
 		Proxy:       p,
 		HealthCheck: hc,
 		ServiceList: serviceList,
-		Server:      s,
+		Server:      server,
 	}, nil
 }
 
