@@ -23,6 +23,7 @@ func (proxy *Proxy) manage(ctx context.Context, w http.ResponseWriter, req *http
 
 	// Copy headers from original request to proxy request
 	proxyReq.Header = req.Header
+	proxyReq.Host = req.Host
 
 	client := &http.Client{
 		// nolint:revive // param names give context here.
