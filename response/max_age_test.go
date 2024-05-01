@@ -72,6 +72,7 @@ func TestMaxAgeShortCacheTime(t *testing.T) {
 
 		searchURIs := []string{
 			"/releasecalendar",
+			"/releasecalendar?view=upcoming",
 			"/publications",
 			"/economy/datalist",
 			"/business/anotherbusiness/allmethodologies",

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -94,5 +95,10 @@ func wasReleasedRecently(releaseTime time.Time, offset time.Duration) bool {
 }
 
 func isSearchPageURI(uri string) bool {
-	return searchPageRegexp.MatchString(uri)
+	urlToTest, err := url.Parse(uri)
+	if err != nil {
+		return false
+	}
+
+	return searchPageRegexp.MatchString(urlToTest.Path)
 }
