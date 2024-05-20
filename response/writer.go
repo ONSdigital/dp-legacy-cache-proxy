@@ -73,7 +73,7 @@ func isGetOrHead(method string) bool {
 }
 
 func isCacheableStatusCode(statusCode int) bool {
-	return statusCode < 300 || statusCode == 404
+	return statusCode < 300 || statusCode == 304 || statusCode == 404
 }
 
 func shouldCalculateMaxAge(cacheControlValue string) bool {
