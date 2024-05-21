@@ -52,6 +52,20 @@ Feature: Set cache time
     | /business/business/business/datalist                    |
     | /anothertopic/staticlist                                |
 
+  Scenario Outline: The response from Babbage is 304 so we set Cache-Control header
+    Given Babbage will send the following response with status "304":
+      """
+      """
+    And Babbage will set the "X-Some-Header" header to "some-value"
+    When the Proxy receives a GET request for "<sample-uri>"
+    Then the response header "Cache-Control" should be "max-age=<max-age>"
+    And the HTTP status code should be "304"
+  Examples:
+    | sample-uri                                              | max-age |
+    | /some-url                                               |     900 |
+    | /releasecalendar                                        |      10 |
+    | /favicon.ico                                            |   14400 |
+
   Scenario: Return the errored cache time when the Legacy Cache API returns an error
     Given the Legacy Cache API has an error
     When the Proxy receives a GET request for "/some-path"
