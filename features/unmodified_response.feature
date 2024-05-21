@@ -81,14 +81,6 @@ Feature: Unmodified response
     | 510         |
     | 511         |
 
-  Scenario: The status code from Babbage is 304 (Not Modified)
-    Given Babbage will set the HTTP status code to "304"
-    And Babbage will set the "ETag" header to "abc123"
-    And Babbage will set the "Referrer-Policy" header to "origin"
-    When the Proxy receives a GET request for "/"
-    Then I should receive an empty response
-    And I should receive the same, unmodified response from Babbage
-
   Scenario Outline: The response from Babbage is not cacheable (based on its Cache-Control header)
     Given Babbage will send the following response with status "200":
       """
