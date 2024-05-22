@@ -9,7 +9,7 @@ Feature: Proxy returns response from Release Calendar
       Mock response from Release Calendar
       """
     When the Proxy receives a GET request for "/releases/some-path"
-    Then the response header "Cache-Control" should be "max-age=900"
+    Then the response header "Cache-Control" should be "public, s-maxage=900, max-age=900, stale-while-revalidate=30"
     And the HTTP status code should be "200"
     And I should receive the following response:
       """

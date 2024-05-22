@@ -60,9 +60,9 @@ func writeResponseWithMaxAge(ctx context.Context, w http.ResponseWriter, service
 	// Get the original Cache-Control value and modify it to include max-age
 	originalCacheControl := serviceResponse.Header.Get("Cache-Control")
 	if originalCacheControl != "" {
-		overrideHeaders["Cache-Control"] = fmt.Sprintf("%s, s-maxage=%d, max-age=%d, stale-while-revalidate=30", originalCacheControl, maxAge)
+		overrideHeaders["Cache-Control"] = fmt.Sprintf("%s, s-maxage=%d, max-age=%d, stale-while-revalidate=30", originalCacheControl, maxAge, maxAge)
 	} else {
-		overrideHeaders["Cache-Control"] = fmt.Sprintf("public, s-maxage=%d, max-age=%d, stale-while-revalidate=30", maxAge)
+		overrideHeaders["Cache-Control"] = fmt.Sprintf("public, s-maxage=%d, max-age=%d, stale-while-revalidate=30", maxAge, maxAge)
 	}
 
 	writeResponse(ctx, w, serviceResponse, overrideHeaders)
