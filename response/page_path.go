@@ -9,17 +9,19 @@ import (
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
-var resourceEndpoints = []string{"/chartconfig", "/chartimage", "/embed", "/chart", "/resource", "/generator", "/file", "/export"}
+var (
+	resourceEndpoints = []string{"/chartconfig", "/chartimage", "/embed", "/chart", "/resource", "/generator", "/file", "/export"}
 
-var visualisationsEndpointRegexp = regexp.MustCompile(`(^/visualisations/[^/]+)/`)
-var bulletinsOrArticlesPathRegexp = regexp.MustCompile(`(.+/(bulletins|articles)(?:/[^/]+){2})`)
-var methodologiesOrQMIsOrAdHocsPathRegexp = regexp.MustCompile(`.+/(methodologies|qmis|adhocs)/([^/]+)`)
-var fileNameWithExtensionRegexp = regexp.MustCompile(`(.*)/[^/]+\.\w+$`)
-var timeSeriesPathRegexp = regexp.MustCompile(`(.+/timeseries(?:/[^/]+){0,2})`)
-var datasetsPathRegexp = regexp.MustCompile(`(.+/datasets(?:/[^/]+){0,2})`)
+	visualisationsEndpointRegexp          = regexp.MustCompile(`(^/visualisations/[^/]+)/`)
+	bulletinsOrArticlesPathRegexp         = regexp.MustCompile(`(.+/(bulletins|articles)(?:/[^/]+){2})`)
+	methodologiesOrQMIsOrAdHocsPathRegexp = regexp.MustCompile(`.+/(methodologies|qmis|adhocs)/([^/]+)`)
+	fileNameWithExtensionRegexp           = regexp.MustCompile(`(.*)/[^/]+\.\w+$`)
+	timeSeriesPathRegexp                  = regexp.MustCompile(`(.+/timeseries(?:/[^/]+){0,2})`)
+	datasetsPathRegexp                    = regexp.MustCompile(`(.+/datasets(?:/[^/]+){0,2})`)
+)
 
 func getPagePath(ctx context.Context, uri string) (string, error) {
-	log.Info(ctx, "Calculating page path for "+uri)
+	log.Info(ctx, "Calculating page path", log.Data{"uri": uri})
 
 	uri = strings.TrimSuffix(uri, "/")
 
@@ -80,7 +82,7 @@ func isResourceEndpoint(uri string) bool {
 func extractAndDecodeURIFromQueryString(ctx context.Context, fullURI string) (string, error) {
 	urlStruct, err := url.Parse(fullURI)
 	if err != nil {
-		log.Error(ctx, "error parsing the URI: "+fullURI, err)
+		log.Error(ctx, "error parsing URI", err, log.Data{"uri": fullURI})
 		return "", err
 	}
 
@@ -89,7 +91,7 @@ func extractAndDecodeURIFromQueryString(ctx context.Context, fullURI string) (st
 
 		decodedURI, err := url.QueryUnescape(uriQueryParam)
 		if err != nil {
-			log.Error(ctx, "unable to decode the 'uri' query parameter: "+fullURI, err)
+			log.Error(ctx, "unable to decode the 'uri' query parameter", err, log.Data{"uri": fullURI})
 			return "", err
 		}
 

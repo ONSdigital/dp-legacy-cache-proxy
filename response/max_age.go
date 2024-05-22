@@ -19,7 +19,7 @@ var versionedURIRegexp = regexp.MustCompile(`/previous/v\d+`)
 var searchPageRegexp = regexp.MustCompile(`\/(allmethodologies|releasecalendar|timeseriestool|datalist|publications|staticlist|topicspecificmethodology|relateddata|alladhocs|publishedrequests)$`)
 
 func maxAge(ctx context.Context, uri string, cfg *config.Config) int {
-	log.Info(ctx, "Calculating max-age for "+uri)
+	log.Info(ctx, "Calculating max-age", log.Data{"uri": uri})
 
 	if isLegacyAssetURI(uri) || isOnsURI(uri) || isVersionedURI(uri) {
 		return int(cfg.CacheTimeLong.Seconds())
