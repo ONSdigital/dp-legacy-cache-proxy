@@ -58,7 +58,7 @@ Feature: Set cache time
       """
     And Babbage will set the "X-Some-Header" header to "some-value"
     When the Proxy receives a GET request for "<sample-uri>"
-    Then the response header "Cache-Control" should be "max-age=<max-age>"
+    Then the response header "Cache-Control" should be "public, s-maxage=<max-age>, max-age=<max-age>, stale-while-revalidate=30"
     And the HTTP status code should be "304"
   Examples:
     | sample-uri                                              | max-age |
