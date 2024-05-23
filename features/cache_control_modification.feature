@@ -11,7 +11,7 @@ Feature: Modification of Cache-Control header to append max-age when Babbage has
       """
     And Babbage will set the "Cache-Control" header to "<Babbage-Cache-Control>"
     When the Proxy receives a GET request for "/some-path"
-    Then the response header "Cache-Control" should be "<Babbage-Cache-Control>, max-age=900"
+    Then the response header "Cache-Control" should be "<Babbage-Cache-Control>, s-maxage=900, max-age=900, stale-while-revalidate=30"
 
   Examples:
     | Babbage-Cache-Control |
