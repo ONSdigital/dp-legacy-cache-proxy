@@ -26,7 +26,6 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the max-age directive should be calculated, rather than predefined$`, c.theMaxAgeDirectiveShouldBeCalculatedRatherThanPredefined)
 	ctx.Step(`^the Proxy has the publish expiry offset disabled$`, c.disablePublishExpiryOffset)
 	ctx.Step(`^config includes ([A-Z0-9_]+) with a value of "([^"]*)"$`, c.configIncludes)
-
 }
 
 func (c *Component) disablePublishExpiryOffset() {

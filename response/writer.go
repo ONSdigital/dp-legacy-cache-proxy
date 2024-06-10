@@ -10,12 +10,18 @@ import (
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
+const (
+	publicString       = "public"
+	privateString      = "private"
+	cacheControlHeader = "Cache-Control"
+)
+
 func WriteResponse(ctx context.Context, w http.ResponseWriter, serviceResponse *http.Response, req *http.Request, cfg *config.Config) {
 	if !isGetOrHead(req.Method) {
 		writeUnmodifiedResponse(ctx, w, serviceResponse)
 	} else if !isCacheableStatusCode(serviceResponse.StatusCode) {
 		writeUnmodifiedResponse(ctx, w, serviceResponse)
-	} else if cacheControl := serviceResponse.Header.Get("Cache-Control"); !shouldCalculateMaxAge(cacheControl) {
+	} else if cacheControl := serviceResponse.Header.Get(cacheControlHeader); !shouldCalculateMaxAge(cacheControl) {
 		writeUnmodifiedResponse(ctx, w, serviceResponse)
 	} else {
 		maxAgeInSeconds := maxAge(ctx, req.RequestURI, cfg)
@@ -57,9 +63,9 @@ func writeUnmodifiedResponse(ctx context.Context, w http.ResponseWriter, service
 func writeResponseWithMaxAge(ctx context.Context, w http.ResponseWriter, serviceResponse *http.Response, maxAge int, cfg *config.Config) {
 	overrideHeaders := make(map[string]string)
 
-	cacheControl := "public"
+	cacheControl := publicString
 	// Get the original Cache-Control value and - if non-blank - use that instead of above
-	originalCacheControl := serviceResponse.Header.Get("Cache-Control")
+	originalCacheControl := serviceResponse.Header.Get(cacheControlHeader)
 	if originalCacheControl != "" {
 		cacheControl = originalCacheControl
 	}
@@ -67,7 +73,7 @@ func writeResponseWithMaxAge(ctx context.Context, w http.ResponseWriter, service
 	if cfg.StaleWhileRevalidateSeconds >= 0 {
 		staleWhileRevalidateOption = fmt.Sprintf(", stale-while-revalidate=%d", cfg.StaleWhileRevalidateSeconds)
 	}
-	overrideHeaders["Cache-Control"] = fmt.Sprintf("%s, s-maxage=%d, max-age=%d%s", cacheControl, maxAge, maxAge, staleWhileRevalidateOption)
+	overrideHeaders[cacheControlHeader] = fmt.Sprintf("%s, s-maxage=%d, max-age=%d%s", cacheControl, maxAge, maxAge, staleWhileRevalidateOption)
 
 	writeResponse(ctx, w, serviceResponse, overrideHeaders)
 }
@@ -82,7 +88,7 @@ func isCacheableStatusCode(statusCode int) bool {
 
 func shouldCalculateMaxAge(cacheControlValue string) bool {
 	switch cacheControlValue {
-	case "", "private", "public":
+	case "", publicString, privateString:
 		return true
 	default:
 		return false
