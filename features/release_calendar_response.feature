@@ -3,7 +3,7 @@ Feature: Proxy returns response from Release Calendar
     The proxy can be called with Release Calendar URLs (for instance, "/releases/adoption"),
     when this happens we want to ensure that the proxy forwards the URL to the Release Calendar. 
 
-  Scenario: Proxy returns response from Release Calendar with stale-while-validate
+  Scenario: Proxy returns response from Release Calendar with stale-while-revalidate
     Given Release calendar will send the following response with status "200":
       """
       Mock response from Release Calendar
@@ -18,7 +18,7 @@ Feature: Proxy returns response from Release Calendar
       """
 
 
-  Scenario: Proxy returns response from Release Calendar without stale-while-validate
+  Scenario: Proxy returns response from Release Calendar without stale-while-revalidate
     Given Release calendar will send the following response with status "200":
       """
       Mock response from Release Calendar

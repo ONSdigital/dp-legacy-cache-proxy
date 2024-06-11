@@ -4,7 +4,7 @@ Feature: Modification of Cache-Control header to append max-age when Babbage has
     set the Cache-Control header (for instance, to "public" or "private"). In these scenarios, 
     the Proxy has to set the max-age directive without overwriting the existing headers.
 
-  Scenario Outline: Proxy adjusts Cache-Control header when Babbage sets Cache-Control to "public" or "private" with stale-while-validate
+  Scenario Outline: Proxy adjusts Cache-Control header when Babbage sets Cache-Control to "public" or "private" with stale-while-revalidate
     Given Babbage will send the following response:
       """
       Mock response from Babbage
