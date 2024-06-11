@@ -25,10 +25,25 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the Proxy receives a DELETE request for "([^"]*)"$`, c.apiFeature.IDelete)
 	ctx.Step(`^the max-age directive should be calculated, rather than predefined$`, c.theMaxAgeDirectiveShouldBeCalculatedRatherThanPredefined)
 	ctx.Step(`^the Proxy has the publish expiry offset disabled$`, c.disablePublishExpiryOffset)
+	ctx.Step(`^config includes ([A-Z0-9_]+) with a value of "([^"]*)"$`, c.configIncludes)
 }
 
 func (c *Component) disablePublishExpiryOffset() {
 	c.Config.EnablePublishExpiryOffset = false
+}
+
+func (c *Component) configIncludes(configItem, configVal string) error {
+	switch configItem {
+	case "STALE_WHILE_REVALIDATE_SECONDS":
+		seconds, err := strconv.Atoi(configVal)
+		if err != nil {
+			return err
+		}
+		c.Config.StaleWhileRevalidateSeconds = int64(seconds)
+	default:
+		return fmt.Errorf("not a valid config item")
+	}
+	return nil
 }
 
 func (c *Component) iShouldReceiveAnEmptyResponse() error {
