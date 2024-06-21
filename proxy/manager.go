@@ -54,7 +54,7 @@ func IsReleaseCalendarURL(url string) bool {
 }
 
 func getTargetURL(requestURL string, cfg *config.Config) string {
-	if IsReleaseCalendarURL(requestURL) && cfg.EnableReleaseCalendar {
+	if IsReleaseCalendarURL(requestURL) {
 		return cfg.RelCalURL + requestURL
 	}
 	return cfg.BabbageURL + requestURL
