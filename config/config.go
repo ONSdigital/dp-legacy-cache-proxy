@@ -12,6 +12,7 @@ type Config struct {
 	GracefulShutdownTimeout     time.Duration `envconfig:"GRACEFUL_SHUTDOWN_TIMEOUT"`
 	HealthCheckInterval         time.Duration `envconfig:"HEALTHCHECK_INTERVAL"`
 	HealthCheckCriticalTimeout  time.Duration `envconfig:"HEALTHCHECK_CRITICAL_TIMEOUT"`
+	HTTPMaxConnections          int           `envconfig:"HTTP_MAX_CONNECTIONS"`
 	OTBatchTimeout              time.Duration `encconfig:"OTEL_BATCH_TIMEOUT"`
 	OTExporterOTLPEndpoint      string        `envconfig:"OTEL_EXPORTER_OTLP_ENDPOINT"`
 	OTServiceName               string        `envconfig:"OTEL_SERVICE_NAME"`
@@ -44,6 +45,7 @@ func Get() (*Config, error) {
 		GracefulShutdownTimeout:     5 * time.Second,
 		HealthCheckInterval:         30 * time.Second,
 		HealthCheckCriticalTimeout:  90 * time.Second,
+		HTTPMaxConnections:          0,
 		OTBatchTimeout:              5 * time.Second,
 		OTExporterOTLPEndpoint:      "localhost:4317",
 		OTServiceName:               "dp-legacy-cache-proxy",

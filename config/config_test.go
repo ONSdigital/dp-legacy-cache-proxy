@@ -27,6 +27,7 @@ func TestConfig(t *testing.T) {
 					GracefulShutdownTimeout:     5 * time.Second,
 					HealthCheckInterval:         30 * time.Second,
 					HealthCheckCriticalTimeout:  90 * time.Second,
+					HTTPMaxConnections:          0,
 					OTBatchTimeout:              5 * time.Second,
 					OTExporterOTLPEndpoint:      "localhost:4317",
 					OTServiceName:               "dp-legacy-cache-proxy",
