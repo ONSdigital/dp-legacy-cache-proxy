@@ -80,6 +80,7 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 		if err := server.Serve(l); err != nil {
 			svcErrors <- errors.Wrap(err, "failure in http listen and serve")
 		}
+		defer l.Close()
 	}()
 
 	return &Service{
