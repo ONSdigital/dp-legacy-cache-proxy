@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"net"
 	"net/http"
 
 	"github.com/ONSdigital/dp-healthcheck/healthcheck"
@@ -24,6 +25,7 @@ type Initialiser interface {
 type HTTPServer interface {
 	ListenAndServe() error
 	Shutdown(ctx context.Context) error
+	Serve(l net.Listener) error
 }
 
 // HealthChecker defines the required methods from Healthcheck

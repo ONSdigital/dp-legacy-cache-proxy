@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"net"
 
 	"github.com/ONSdigital/dp-legacy-cache-proxy/config"
 	"github.com/ONSdigital/dp-legacy-cache-proxy/proxy"
@@ -10,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"golang.org/x/net/netutil"
 )
 
 // Service contains all the configs, server and clients to run the proxy
@@ -63,11 +65,22 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 
 	hc.Start(ctx)
 
+	// Create a LimitListener to cap concurrent http connections
+	l, err := net.Listen("tcp", cfg.BindAddr)
+	if err != nil {
+		log.Fatal(ctx, "error starting tcp listener", err)
+	}
+
+	if maxC := cfg.HTTPMaxConnections; maxC > 0 {
+		l = netutil.LimitListener(l, maxC)
+	}
+
 	// Run the http server in a new go-routine
 	go func() {
-		if err := server.ListenAndServe(); err != nil {
+		if err := server.Serve(l); err != nil {
 			svcErrors <- errors.Wrap(err, "failure in http listen and serve")
 		}
+		defer l.Close()
 	}()
 
 	return &Service{

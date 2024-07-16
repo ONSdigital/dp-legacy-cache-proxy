@@ -5,9 +5,9 @@ package mock
 
 import (
 	"context"
-	"sync"
-
 	"github.com/ONSdigital/dp-legacy-cache-proxy/service"
+	"net"
+	"sync"
 )
 
 // Ensure, that HTTPServerMock does implement service.HTTPServer.
@@ -23,6 +23,9 @@ var _ service.HTTPServer = &HTTPServerMock{}
 //			ListenAndServeFunc: func() error {
 //				panic("mock out the ListenAndServe method")
 //			},
+//			ServeFunc: func(l net.Listener) error {
+//				panic("mock out the Serve method")
+//			},
 //			ShutdownFunc: func(ctx context.Context) error {
 //				panic("mock out the Shutdown method")
 //			},
@@ -36,6 +39,9 @@ type HTTPServerMock struct {
 	// ListenAndServeFunc mocks the ListenAndServe method.
 	ListenAndServeFunc func() error
 
+	// ServeFunc mocks the Serve method.
+	ServeFunc func(l net.Listener) error
+
 	// ShutdownFunc mocks the Shutdown method.
 	ShutdownFunc func(ctx context.Context) error
 
@@ -44,6 +50,11 @@ type HTTPServerMock struct {
 		// ListenAndServe holds details about calls to the ListenAndServe method.
 		ListenAndServe []struct {
 		}
+		// Serve holds details about calls to the Serve method.
+		Serve []struct {
+			// L is the l argument value.
+			L net.Listener
+		}
 		// Shutdown holds details about calls to the Shutdown method.
 		Shutdown []struct {
 			// Ctx is the ctx argument value.
@@ -51,6 +62,7 @@ type HTTPServerMock struct {
 		}
 	}
 	lockListenAndServe sync.RWMutex
+	lockServe          sync.RWMutex
 	lockShutdown       sync.RWMutex
 }
 
@@ -78,6 +90,38 @@ func (mock *HTTPServerMock) ListenAndServeCalls() []struct {
 	mock.lockListenAndServe.RLock()
 	calls = mock.calls.ListenAndServe
 	mock.lockListenAndServe.RUnlock()
+	return calls
+}
+
+// Serve calls ServeFunc.
+func (mock *HTTPServerMock) Serve(l net.Listener) error {
+	if mock.ServeFunc == nil {
+		panic("HTTPServerMock.ServeFunc: method is nil but HTTPServer.Serve was just called")
+	}
+	callInfo := struct {
+		L net.Listener
+	}{
+		L: l,
+	}
+	mock.lockServe.Lock()
+	mock.calls.Serve = append(mock.calls.Serve, callInfo)
+	mock.lockServe.Unlock()
+	return mock.ServeFunc(l)
+}
+
+// ServeCalls gets all the calls that were made to Serve.
+// Check the length with:
+//
+//	len(mockedHTTPServer.ServeCalls())
+func (mock *HTTPServerMock) ServeCalls() []struct {
+	L net.Listener
+} {
+	var calls []struct {
+		L net.Listener
+	}
+	mock.lockServe.RLock()
+	calls = mock.calls.Serve
+	mock.lockServe.RUnlock()
 	return calls
 }
 

@@ -24,6 +24,7 @@ appropriate value.
 | GRACEFUL_SHUTDOWN_TIMEOUT      | 5s                       | The graceful shutdown timeout in seconds (`time.Duration` format)                                                                           
 | HEALTHCHECK_INTERVAL           | 30s                      | Time between self-healthchecks (`time.Duration` format)                                                                                     
 | HEALTHCHECK_CRITICAL_TIMEOUT   | 90s                      | Time to wait until an unhealthy dependent propagates its state to make this app unhealthy (`time.Duration` format)                          
+| HTTP_MAX_CONNECTIONS         | 0                      | Limit the number of concurrent http connections (0 = unlimited)                                                                      |
 | OTEL_BATCH_TIMEOUT             | 5s                       | Time duration after which a batch will be sent regardless of size (`time.Duration` format)                                                  
 | OTEL_EXPORTER_OTLP_ENDPOINT    | localhost:4317           | OpenTelemetry Exporter address                                                                                                              
 | OTEL_SERVICE_NAME              | dp-legacy-cache-proxy    | The name of this service in OpenTelemetry                                                                                                   
