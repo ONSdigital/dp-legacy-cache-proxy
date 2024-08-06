@@ -51,10 +51,11 @@ func TestMaxAgeLongCacheTime(t *testing.T) {
 		Convey("When the 'maxAge' function is called", func() {
 			for _, testCases := range groupedTestCases {
 				for _, uri := range testCases {
-					result := maxAge(ctx, uri, cfg)
+					result, isCalculated := maxAge(ctx, uri, cfg)
 
 					Convey("Then it should return a long cache time for the following URI: "+uri, func() {
 						So(result, ShouldEqual, longCacheTime)
+						So(isCalculated, ShouldBeFalse)
 					})
 				}
 			}
@@ -81,10 +82,11 @@ func TestMaxAgeShortCacheTime(t *testing.T) {
 
 		Convey("When the 'maxAge' function is called", func() {
 			for _, uri := range searchURIs {
-				result := maxAge(ctx, uri, cfg)
+				result, isCalculated := maxAge(ctx, uri, cfg)
 
 				Convey("Then it should return a short cache time for the following URI: "+uri, func() {
 					So(result, ShouldEqual, shortCacheTime)
+					So(isCalculated, ShouldBeFalse)
 				})
 			}
 		})
@@ -135,37 +137,41 @@ func TestMaxAgeInteractionWithLegacyCacheAPI(t *testing.T) {
 
 		Convey("When the 'maxAge' function is called and there is a problem trying to retrieve a Cache Time resource", func() {
 			setMockResponseBody("invalid response")
-			result := maxAge(ctx, "/some-valid-url", cfg)
+			result, isCalculated := maxAge(ctx, "/some-valid-url", cfg)
 
 			Convey("Then it should return an errored cache time", func() {
 				So(result, ShouldEqual, erroredCacheTime)
+				So(isCalculated, ShouldBeFalse)
 			})
 		})
 
 		Convey("When the 'maxAge' function is called and there is a problem with the API", func() {
 			setMockResponseStatusCode(http.StatusInternalServerError)
-			result := maxAge(ctx, "/some-valid-url", cfg)
+			result, isCalculated := maxAge(ctx, "/some-valid-url", cfg)
 
 			Convey("Then it should return an errored cache time", func() {
 				So(result, ShouldEqual, erroredCacheTime)
+				So(isCalculated, ShouldBeFalse)
 			})
 		})
 
 		Convey("When the 'maxAge' function is called and the API does not have the requested Cache Time resource", func() {
 			setMockResponseStatusCode(http.StatusNotFound)
-			result := maxAge(ctx, "/some-valid-url", cfg)
+			result, isCalculated := maxAge(ctx, "/some-valid-url", cfg)
 
 			Convey("Then it should return a default cache time", func() {
 				So(result, ShouldEqual, defaultCacheTime)
+				So(isCalculated, ShouldBeFalse)
 			})
 		})
 
 		Convey("When the 'maxAge' function is called and the requested Cache Time resource does not have a release time", func() {
 			setMockResponseBody(`{"_id": "7fadfea5c8372c59c0d20599ff95b42a", "path": "/some-valid-path"}`)
-			result := maxAge(ctx, "/some-valid-url", cfg)
+			result, isCalculated := maxAge(ctx, "/some-valid-url", cfg)
 
 			Convey("Then it should return a default cache time", func() {
 				So(result, ShouldEqual, defaultCacheTime)
+				So(isCalculated, ShouldBeFalse)
 			})
 		})
 
@@ -176,13 +182,14 @@ func TestMaxAgeInteractionWithLegacyCacheAPI(t *testing.T) {
 					secondsUntilRelease := time.Until(futureReleaseTime).Seconds()
 					So(secondsUntilRelease, ShouldBeLessThan, defaultCacheTime)
 					setMockResponseWithReleaseTime(futureReleaseTime)
-					result := maxAge(ctx, "/some-valid-url", cfg)
+					result, isCalculated := maxAge(ctx, "/some-valid-url", cfg)
 
 					Convey("Then it should return a calculated cache time", func() {
 						// Small error threshold (in seconds) to account for result discrepancies due to using an actual
 						// time (not mocked) and the tests possibly running slow
 						errorThreshold := 3
 						So(result, ShouldAlmostEqual, secondsUntilRelease, errorThreshold)
+						So(isCalculated, ShouldBeTrue)
 					})
 				})
 
@@ -191,10 +198,11 @@ func TestMaxAgeInteractionWithLegacyCacheAPI(t *testing.T) {
 					secondsUntilRelease := time.Until(futureReleaseTime).Seconds()
 					So(secondsUntilRelease, ShouldBeGreaterThan, defaultCacheTime)
 					setMockResponseWithReleaseTime(futureReleaseTime)
-					result := maxAge(ctx, "/some-valid-url", cfg)
+					result, isCalculated := maxAge(ctx, "/some-valid-url", cfg)
 
 					Convey("Then it should return a default cache time", func() {
 						So(result, ShouldEqual, defaultCacheTime)
+						So(isCalculated, ShouldBeFalse)
 					})
 				})
 			})
@@ -205,10 +213,11 @@ func TestMaxAgeInteractionWithLegacyCacheAPI(t *testing.T) {
 					secondsSinceRelease := time.Since(pastReleaseTime).Seconds()
 					So(secondsSinceRelease, ShouldBeLessThan, publishExpiryOffset)
 					setMockResponseWithReleaseTime(pastReleaseTime)
-					result := maxAge(ctx, "/some-valid-url", cfg)
+					result, isCalculated := maxAge(ctx, "/some-valid-url", cfg)
 
 					Convey("Then it should return a short cache time", func() {
 						So(result, ShouldEqual, shortCacheTime)
+						So(isCalculated, ShouldBeFalse)
 					})
 				})
 
@@ -217,10 +226,11 @@ func TestMaxAgeInteractionWithLegacyCacheAPI(t *testing.T) {
 					secondsSinceRelease := time.Since(pastReleaseTime).Seconds()
 					So(secondsSinceRelease, ShouldBeGreaterThan, publishExpiryOffset)
 					setMockResponseWithReleaseTime(pastReleaseTime)
-					result := maxAge(ctx, "/some-valid-url", cfg)
+					result, isCalculated := maxAge(ctx, "/some-valid-url", cfg)
 
 					Convey("Then it should return a default cache time", func() {
 						So(result, ShouldEqual, defaultCacheTime)
+						So(isCalculated, ShouldBeFalse)
 					})
 				})
 			})
@@ -262,19 +272,21 @@ func TestMaxAgeWithPublishExpiryOffset(t *testing.T) {
 
 			Convey("When the Publish Expiry Offset is toggled ON and the 'maxAge' function is called", func() {
 				cfg.EnablePublishExpiryOffset = true
-				result := maxAge(ctx, "/some-valid-url", cfg)
+				result, isCalculated := maxAge(ctx, "/some-valid-url", cfg)
 
 				Convey("Then it should return a short cache time", func() {
 					So(result, ShouldEqual, shortCacheTime)
+					So(isCalculated, ShouldBeFalse)
 				})
 			})
 
 			Convey("When the Publish Expiry Offset is toggled OFF and the 'maxAge' function is called", func() {
 				cfg.EnablePublishExpiryOffset = false
-				result := maxAge(ctx, "/some-valid-url", cfg)
+				result, isCalculated := maxAge(ctx, "/some-valid-url", cfg)
 
 				Convey("Then it should return a default cache time", func() {
 					So(result, ShouldEqual, defaultCacheTime)
+					So(isCalculated, ShouldBeFalse)
 				})
 			})
 		})

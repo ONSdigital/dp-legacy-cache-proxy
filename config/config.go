@@ -28,6 +28,7 @@ type Config struct {
 	ReadTimeout                 time.Duration `envconfig:"READ_TIMEOUT"`
 	WriteTimeout                time.Duration `envconfig:"WRITE_TIMEOUT"`
 	StaleWhileRevalidateSeconds int64         `envconfig:"STALE_WHILE_REVALIDATE_SECONDS"`
+	EnableMaxAgeCountdown       bool          `envconfig:"ENABLE_MAX_AGE_COUNTDOWN"`
 	OtelEnabled                 bool          `envconfig:"OTEL_ENABLED"`
 }
 
@@ -61,6 +62,7 @@ func Get() (*Config, error) {
 		ReadTimeout:                 15 * time.Second,
 		WriteTimeout:                30 * time.Second,
 		StaleWhileRevalidateSeconds: -1,
+		EnableMaxAgeCountdown:       true,
 		OtelEnabled:                 false,
 	}
 
