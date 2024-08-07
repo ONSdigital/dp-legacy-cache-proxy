@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -42,10 +43,15 @@ var funcDoGetHTTPServerNil = func(cfg *config.Config, bindAddr string, router ht
 	return nil
 }
 
+var portWobble = 33333
+
 func TestRun(t *testing.T) {
-	Convey("Having a set of mocked dependencies", t, func() {
-		cfg, err := config.Get()
-		So(err, ShouldBeNil)
+	Convey("Having a correctly initialised service and set of mocked dependencies", t, func() {
+		cfg, cfgErr := config.Get()
+		So(cfgErr, ShouldBeNil)
+
+		cfg.BindAddr = "localhost:" + strconv.Itoa(portWobble)
+		portWobble++
 
 		// nolint:revive // param names give context here.
 		hcMock := &mock.HealthCheckerMock{
@@ -128,7 +134,6 @@ func TestRun(t *testing.T) {
 			Convey("The checkers are registered and the healthcheck and http server started", func() {
 				So(len(hcMock.AddCheckCalls()), ShouldEqual, 0)
 				So(len(initMock.DoGetHTTPServerCalls()), ShouldEqual, 1)
-				So(initMock.DoGetHTTPServerCalls()[0].BindAddr, ShouldEqual, ":29200")
 				So(len(hcMock.StartCalls()), ShouldEqual, 1)
 				//!!! a call needed to stop the server, maybe ?
 				serverWg.Wait() // Wait for HTTP server go-routine to finish
@@ -213,6 +218,9 @@ func TestClose(t *testing.T) {
 		cfg, cfgErr := config.Get()
 		So(cfgErr, ShouldBeNil)
 
+		cfg.BindAddr = "localhost:" + strconv.Itoa(portWobble)
+		portWobble++
+
 		hcStopped := false
 
 		// healthcheck Stop does not depend on any other service being closed/stopped
@@ -293,7 +301,7 @@ func TestClose(t *testing.T) {
 			timeoutServerMock := &mock.HTTPServerMock{
 				ServeFunc: func(l net.Listener) error { return nil },
 				ShutdownFunc: func(ctx context.Context) error {
-					time.Sleep(2 * time.Millisecond)
+					time.Sleep(200 * time.Millisecond)
 					return nil
 				},
 			}
