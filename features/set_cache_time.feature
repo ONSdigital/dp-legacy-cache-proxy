@@ -97,6 +97,7 @@ Feature: Set cache time
     And config includes ENABLE_MAX_AGE_COUNTDOWN with a value of "false"
     When the Proxy receives a GET request for "/some-path"
     Then the s-maxage directive should be calculated, rather than predefined
+    And the max-age directive should be 0
 
   Scenario: Return the default cache time when the release time is in the distant future
     Given the "/some-path" page will have a release in the distant future
