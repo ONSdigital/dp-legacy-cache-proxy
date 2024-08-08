@@ -43,6 +43,7 @@ func TestConfig(t *testing.T) {
 					ReadTimeout:                 15 * time.Second,
 					WriteTimeout:                30 * time.Second,
 					StaleWhileRevalidateSeconds: -1,
+					EnableMaxAgeCountdown:       true,
 					OtelEnabled:                 false,
 				})
 			})

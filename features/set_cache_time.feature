@@ -81,13 +81,32 @@ Feature: Set cache time
     When the Proxy receives a GET request for "/some-path"
     Then the response header "Cache-Control" should be "public, s-maxage=900, max-age=900"
 
+  Scenario: Return the default cache time when the release time is missing and max-age countdown is disabled
+    Given the "/some-path" page does not have a release time
+    And config includes ENABLE_MAX_AGE_COUNTDOWN with a value of "false"
+    When the Proxy receives a GET request for "/some-path"
+    Then the response header "Cache-Control" should be "public, s-maxage=900, max-age=900"
+
   Scenario: Return the calculated cache time when the release time is in the near future
     Given the "/some-path" page will have a release in the near future
     When the Proxy receives a GET request for "/some-path"
-    Then the max-age directive should be calculated, rather than predefined
+    Then the max-age,s-maxage directives should be calculated, rather than predefined
+
+  Scenario: Return the calculated cache time when the release time is in the near future and max-age countdown is disabled
+    Given the "/some-path" page will have a release in the near future
+    And config includes ENABLE_MAX_AGE_COUNTDOWN with a value of "false"
+    When the Proxy receives a GET request for "/some-path"
+    Then the s-maxage directive should be calculated, rather than predefined
+    And the max-age directive should be 0
 
   Scenario: Return the default cache time when the release time is in the distant future
     Given the "/some-path" page will have a release in the distant future
+    When the Proxy receives a GET request for "/some-path"
+    Then the response header "Cache-Control" should be "public, s-maxage=900, max-age=900"
+
+  Scenario: Return the default cache time when the release time is in the distant future and max-age countdown is disabled
+    Given the "/some-path" page will have a release in the distant future
+    And config includes ENABLE_MAX_AGE_COUNTDOWN with a value of "false"
     When the Proxy receives a GET request for "/some-path"
     Then the response header "Cache-Control" should be "public, s-maxage=900, max-age=900"
 
