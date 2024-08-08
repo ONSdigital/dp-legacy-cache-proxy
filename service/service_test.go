@@ -26,11 +26,12 @@ var (
 	testBuildTime = "BuildTime"
 	testGitCommit = "GitCommit"
 	testVersion   = "Version"
-	errServer     = errors.New("HTTP Server error")
-)
 
-var (
+	errServer      = errors.New("HTTP Server error")
 	errHealthcheck = errors.New("healthCheck error")
+
+	portWobble = 33333
+	portMux    sync.RWMutex
 )
 
 // nolint:revive // param names give context here.
@@ -43,15 +44,20 @@ var funcDoGetHTTPServerNil = func(cfg *config.Config, bindAddr string, router ht
 	return nil
 }
 
-var portWobble = 33333
+func getBindAddr() (bindURL string) {
+	portMux.Lock()
+	portWobble++
+	bindURL = "localhost:" + strconv.Itoa(portWobble)
+	portMux.Unlock()
+	return
+}
 
 func TestRun(t *testing.T) {
 	Convey("Having a correctly initialised service and set of mocked dependencies", t, func() {
 		cfg, cfgErr := config.Get()
 		So(cfgErr, ShouldBeNil)
 
-		cfg.BindAddr = "localhost:" + strconv.Itoa(portWobble)
-		portWobble++
+		cfg.BindAddr = getBindAddr()
 
 		// nolint:revive // param names give context here.
 		hcMock := &mock.HealthCheckerMock{
@@ -218,9 +224,7 @@ func TestClose(t *testing.T) {
 		cfg, cfgErr := config.Get()
 		So(cfgErr, ShouldBeNil)
 
-		cfg.BindAddr = "localhost:" + strconv.Itoa(portWobble)
-		portWobble++
-
+		cfg.BindAddr = getBindAddr()
 		hcStopped := false
 
 		// healthcheck Stop does not depend on any other service being closed/stopped

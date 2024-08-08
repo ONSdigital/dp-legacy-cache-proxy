@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ONSdigital/dp-legacy-cache-proxy/config"
@@ -83,11 +84,21 @@ func (c *Component) Close() error {
 	return nil
 }
 
-var portWobble = 22222
+var (
+	portWobble = 22222
+	portMux    sync.RWMutex
+)
+
+func getBindAddr() (bindURL string) {
+	portMux.Lock()
+	portWobble++
+	bindURL = "localhost:" + strconv.Itoa(portWobble)
+	portMux.Unlock()
+	return
+}
 
 func (c *Component) InitialiseService() (http.Handler, error) {
-	c.Config.BindAddr = "localhost:" + strconv.Itoa(portWobble)
-	portWobble++
+	c.Config.BindAddr = getBindAddr()
 	var err error
 	c.svc, err = service.Run(context.Background(), c.Config, c.svcList, "1", "", "", c.errorChan)
 	if err != nil {
