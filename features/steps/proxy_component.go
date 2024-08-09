@@ -3,7 +3,6 @@ package steps
 import (
 	"context"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
@@ -83,11 +82,8 @@ func (c *Component) Close() error {
 	return nil
 }
 
-var portWobble = 22222
-
 func (c *Component) InitialiseService() (http.Handler, error) {
-	c.Config.BindAddr = "localhost:" + strconv.Itoa(portWobble)
-	portWobble++
+	c.Config.BindAddr = "localhost:0"
 	var err error
 	c.svc, err = service.Run(context.Background(), c.Config, c.svcList, "1", "", "", c.errorChan)
 	if err != nil {
