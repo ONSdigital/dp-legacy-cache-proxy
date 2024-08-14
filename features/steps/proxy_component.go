@@ -83,6 +83,7 @@ func (c *Component) Close() error {
 }
 
 func (c *Component) InitialiseService() (http.Handler, error) {
+	c.Config.BindAddr = "localhost:0"
 	var err error
 	c.svc, err = service.Run(context.Background(), c.Config, c.svcList, "1", "", "", c.errorChan)
 	if err != nil {

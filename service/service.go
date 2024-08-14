@@ -76,12 +76,12 @@ func Run(ctx context.Context, cfg *config.Config, serviceList *ExternalServiceLi
 	}
 
 	// Run the http server in a new go-routine
-	go func() {
+	go func(l net.Listener) {
 		if err := server.Serve(l); err != nil {
 			svcErrors <- errors.Wrap(err, "failure in http listen and serve")
 		}
 		defer l.Close()
-	}()
+	}(l)
 
 	return &Service{
 		Config:      cfg,

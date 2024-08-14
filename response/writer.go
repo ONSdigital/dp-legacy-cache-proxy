@@ -24,8 +24,8 @@ func WriteResponse(ctx context.Context, w http.ResponseWriter, serviceResponse *
 	} else if cacheControl := serviceResponse.Header.Get(cacheControlHeader); !shouldCalculateMaxAge(cacheControl) {
 		writeUnmodifiedResponse(ctx, w, serviceResponse)
 	} else {
-		maxAgeInSeconds := maxAge(ctx, req.RequestURI, cfg)
-		writeResponseWithMaxAge(ctx, w, serviceResponse, maxAgeInSeconds, cfg)
+		maxAgeInSeconds, ageIsCalculated := maxAge(ctx, req.RequestURI, cfg)
+		writeResponseWithMaxAge(ctx, w, serviceResponse, maxAgeInSeconds, ageIsCalculated, cfg)
 	}
 }
 
@@ -60,7 +60,7 @@ func writeUnmodifiedResponse(ctx context.Context, w http.ResponseWriter, service
 	writeResponse(ctx, w, serviceResponse, noAdditionalHeaders)
 }
 
-func writeResponseWithMaxAge(ctx context.Context, w http.ResponseWriter, serviceResponse *http.Response, maxAge int, cfg *config.Config) {
+func writeResponseWithMaxAge(ctx context.Context, w http.ResponseWriter, serviceResponse *http.Response, maxAge int, ageIsCalculated bool, cfg *config.Config) {
 	overrideHeaders := make(map[string]string)
 
 	cacheControl := publicString
@@ -73,8 +73,11 @@ func writeResponseWithMaxAge(ctx context.Context, w http.ResponseWriter, service
 	if cfg.StaleWhileRevalidateSeconds >= 0 {
 		staleWhileRevalidateOption = fmt.Sprintf(", stale-while-revalidate=%d", cfg.StaleWhileRevalidateSeconds)
 	}
-	overrideHeaders[cacheControlHeader] = fmt.Sprintf("%s, s-maxage=%d, max-age=%d%s", cacheControl, maxAge, maxAge, staleWhileRevalidateOption)
-
+	serverMaxAge := maxAge
+	if !cfg.EnableMaxAgeCountdown && ageIsCalculated {
+		maxAge = 0
+	}
+	overrideHeaders[cacheControlHeader] = fmt.Sprintf("%s, s-maxage=%d, max-age=%d%s", cacheControl, serverMaxAge, maxAge, staleWhileRevalidateOption)
 	writeResponse(ctx, w, serviceResponse, overrideHeaders)
 }
 

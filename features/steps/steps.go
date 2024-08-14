@@ -4,10 +4,21 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/cucumber/godog"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+)
+
+const (
+	maxAgeDirective       = `max-age`
+	serverMaxAgeDirective = `s-maxage`
+)
+
+var (
+	reMaxAge       = regexp.MustCompile(maxAgeDirective + `=(\d+)`)
+	reServerMaxAge = regexp.MustCompile(serverMaxAgeDirective + `=(\d+)`)
 )
 
 func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
@@ -23,7 +34,8 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	ctx.Step(`^the Proxy receives a PUT request for "([^"]*)"$`, c.apiFeature.IPut)
 	ctx.Step(`^the Proxy receives a PATCH request for "([^"]*)"$`, c.apiFeature.IPatch)
 	ctx.Step(`^the Proxy receives a DELETE request for "([^"]*)"$`, c.apiFeature.IDelete)
-	ctx.Step(`^the max-age directive should be calculated, rather than predefined$`, c.theMaxAgeDirectiveShouldBeCalculatedRatherThanPredefined)
+	ctx.Step(`^the (\S+) directives? should be calculated, rather than predefined$`, c.theDirectiveShouldBeCalculatedRatherThanPredefined)
+	ctx.Step(`^the (\S+) directive should be (\d+)$`, c.theDirectiveShouldBe)
 	ctx.Step(`^the Proxy has the publish expiry offset disabled$`, c.disablePublishExpiryOffset)
 	ctx.Step(`^config includes ([A-Z0-9_]+) with a value of "([^"]*)"$`, c.configIncludes)
 }
@@ -40,6 +52,12 @@ func (c *Component) configIncludes(configItem, configVal string) error {
 			return err
 		}
 		c.Config.StaleWhileRevalidateSeconds = int64(seconds)
+	case "ENABLE_MAX_AGE_COUNTDOWN":
+		isEnabled, err := strconv.ParseBool(configVal)
+		if err != nil {
+			return err
+		}
+		c.Config.EnableMaxAgeCountdown = isEnabled
 	default:
 		return fmt.Errorf("not a valid config item")
 	}
@@ -88,22 +106,35 @@ func (c *Component) iShouldReceiveTheSameUnmodifiedResponseFromBabbage() error {
 	return c.StepError()
 }
 
-func (c *Component) theMaxAgeDirectiveShouldBeCalculatedRatherThanPredefined() error {
+func (c *Component) getMaxAgeAndServerMaxAge() (maxAge, serverMaxAge int, err error) {
 	cacheControl := c.apiFeature.HTTPResponse.Header.Get("Cache-Control")
 
-	re := regexp.MustCompile(`max-age=(\d+)`)
-	match := re.FindStringSubmatch(cacheControl)
+	maxAgeMatch := reMaxAge.FindStringSubmatch(cacheControl)
+	serverMaxAgeMatch := reServerMaxAge.FindStringSubmatch(cacheControl)
 
-	maxAgeFound := assert.Len(c, match, 2)
+	maxAgeFound := assert.GreaterOrEqual(c, len(maxAgeMatch), 1)
 	if !maxAgeFound {
-		return errors.New("the max-age directive was not found or is invalid")
+		return 0, 0, errors.New("the max-age directive was not found or is invalid")
+	}
+	serverMaxAgeFound := assert.GreaterOrEqual(c, len(serverMaxAgeMatch), 1)
+	if !serverMaxAgeFound {
+		return 0, 0, errors.New("the s-maxage directive was not found or is invalid")
 	}
 
-	maxAge, err := strconv.Atoi(match[1])
+	if maxAge, err = strconv.Atoi(maxAgeMatch[1]); err != nil {
+		return
+	}
+	if serverMaxAge, err = strconv.Atoi(serverMaxAgeMatch[1]); err != nil {
+		return
+	}
+	return
+}
+
+func (c *Component) checkMaxAgeAndServerMaxAge(checkMaxAgeCalculated, checkServerMaxAgeCalculated bool) error {
+	maxAge, serverMaxAge, err := c.getMaxAgeAndServerMaxAge()
 	if err != nil {
 		return err
 	}
-
 	defaultCacheTime := int(c.Config.CacheTimeDefault.Seconds())
 	preConfiguredCacheTimes := []int{
 		defaultCacheTime,
@@ -112,16 +143,70 @@ func (c *Component) theMaxAgeDirectiveShouldBeCalculatedRatherThanPredefined() e
 		int(c.Config.CacheTimeShort.Seconds()),
 	}
 
-	isMaxAgeCalculated := assert.NotContains(c, preConfiguredCacheTimes, maxAge)
-	if !isMaxAgeCalculated {
-		return fmt.Errorf("max-age is not calculated, its value (%d) is the same as one of the pre-configured cache times", maxAge)
+	type testDirectives struct {
+		directive            string
+		age                  int
+		checkAgeIsCalculated bool
 	}
 
-	isMaxAgeLowerThanDefaultCacheTime := assert.Less(c, maxAge, defaultCacheTime)
-	if !isMaxAgeLowerThanDefaultCacheTime {
-		return fmt.Errorf("max-age (%d) is not lower than the default cache time (%d)", maxAge, defaultCacheTime)
+	for _, td := range []testDirectives{
+		{
+			directive:            maxAgeDirective,
+			age:                  maxAge,
+			checkAgeIsCalculated: checkMaxAgeCalculated,
+		},
+		{
+			directive:            serverMaxAgeDirective,
+			age:                  serverMaxAge,
+			checkAgeIsCalculated: checkServerMaxAgeCalculated,
+		}} {
+		isAgeAPreconfiguredValue := assert.Contains(c, preConfiguredCacheTimes, td.age)
+		if !isAgeAPreconfiguredValue && !td.checkAgeIsCalculated && td.age != 0 {
+			return fmt.Errorf("%s is not calculated, its value (%d) is the same as one of the pre-configured cache times %+v", td.directive, td.age, preConfiguredCacheTimes)
+		}
+
+		isAgeLowerThanDefaultCacheTime := assert.Less(c, td.age, defaultCacheTime)
+		if td.checkAgeIsCalculated && !isAgeLowerThanDefaultCacheTime {
+			return fmt.Errorf("%s (%d) is not lower than the default cache time (%d)", td.directive, td.age, defaultCacheTime)
+		} else if !td.checkAgeIsCalculated && isAgeLowerThanDefaultCacheTime && td.age > 0 {
+			return fmt.Errorf("%s (%d) is lower than the default cache time (%d)", td.directive, td.age, defaultCacheTime)
+		}
 	}
 
+	return nil
+}
+
+func (c *Component) theDirectiveShouldBeCalculatedRatherThanPredefined(directiveNames string) error {
+	checkMaxAgeIsCalculated, checkServerMaxAgeIsCalculated := false, false
+	for _, directiveName := range strings.Split(directiveNames, ",") {
+		switch directiveName {
+		case maxAgeDirective:
+			checkMaxAgeIsCalculated = true
+		case serverMaxAgeDirective:
+			checkServerMaxAgeIsCalculated = true
+		default:
+			return fmt.Errorf("did not recognise directive %q", directiveName)
+		}
+	}
+	return c.checkMaxAgeAndServerMaxAge(checkMaxAgeIsCalculated, checkServerMaxAgeIsCalculated)
+}
+
+func (c *Component) theDirectiveShouldBe(directiveName string, expectedValue int) error {
+	maxAge, serverMaxAge, err := c.getMaxAgeAndServerMaxAge()
+	if err != nil {
+		return err
+	}
+	var obtainedValue int
+	if directiveName == maxAgeDirective {
+		obtainedValue = maxAge
+	} else if directiveName == serverMaxAgeDirective {
+		obtainedValue = serverMaxAge
+	} else {
+		return fmt.Errorf("did not recognise directive %q", directiveName)
+	}
+	if obtainedValue != expectedValue {
+		return fmt.Errorf("%s (%d) does not match expected (%d)", directiveName, obtainedValue, expectedValue)
+	}
 	return nil
 }
 
