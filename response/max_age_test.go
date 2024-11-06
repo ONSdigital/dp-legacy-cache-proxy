@@ -63,36 +63,6 @@ func TestMaxAgeLongCacheTime(t *testing.T) {
 	})
 }
 
-func TestMaxAgeShortCacheTime(t *testing.T) {
-	Convey("Given a list of URIs and a pre-configured short cache time", t, func() {
-		ctx := context.Background()
-		const shortCacheTime = 5
-		cfg := &config.Config{
-			CacheTimeShort: time.Duration(shortCacheTime) * time.Second,
-		}
-
-		searchURIs := []string{
-			"/releasecalendar",
-			"/releasecalendar?view=upcoming",
-			"/publications",
-			"/economy/datalist",
-			"/business/anotherbusiness/allmethodologies",
-			"/timeseriestool",
-		}
-
-		Convey("When the 'maxAge' function is called", func() {
-			for _, uri := range searchURIs {
-				result, isCalculated := maxAge(ctx, uri, cfg)
-
-				Convey("Then it should return a short cache time for the following URI: "+uri, func() {
-					So(result, ShouldEqual, shortCacheTime)
-					So(isCalculated, ShouldBeFalse)
-				})
-			}
-		})
-	})
-}
-
 func TestMaxAgeInteractionWithLegacyCacheAPI(t *testing.T) {
 	Convey("Given a Legacy Cache API and some pre-configured cache time values", t, func() {
 		ctx := context.Background()

@@ -53,9 +53,15 @@ func IsReleaseCalendarURL(url string) bool {
 	return strings.HasPrefix(url, "/releases/")
 }
 
+func IsSearchControllerURL(url string) bool {
+	return (strings.HasSuffix(url, "/previousreleases") || strings.HasSuffix(url, "/relatedData") || strings.HasSuffix(url, "/relateddata"))
+}
+
 func getTargetURL(requestURL string, cfg *config.Config) string {
 	if IsReleaseCalendarURL(requestURL) {
 		return cfg.RelCalURL + requestURL
+	} else if IsSearchControllerURL(requestURL) && cfg.EnableSearchController {
+		return cfg.SearchControllerURL + requestURL
 	}
 	return cfg.BabbageURL + requestURL
 }

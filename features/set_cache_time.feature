@@ -9,6 +9,10 @@ Feature: Set cache time
       """
       Mock response from Babbage
       """
+    Given Search Controller will send the following response:
+      """
+      Mock response from Search Controller
+      """
 
   Scenario Outline: Versioned URI should have a long cache time
     When the Proxy receives a GET request for "<versioned-uri>"
@@ -41,17 +45,6 @@ Feature: Set cache time
     | /fonts/open-sans-regular/OpenSans-Regular-webfont.woff2 |
     | /favicon.ico                                            |
 
-  Scenario Outline: Search URI should have a short cache time
-    When the Proxy receives a GET request for "<search-uri>"
-    Then the response header "Cache-Control" should be "public, s-maxage=10, max-age=10"
-  Examples:
-    | search-uri                                              |
-    | /releasecalendar                                        |
-    | /timeseriestool                                         |
-    | /economy/publications                                   |
-    | /business/business/business/datalist                    |
-    | /anothertopic/staticlist                                |
-
   Scenario Outline: The response from Babbage is 304 so we set Cache-Control header
     Given Babbage will send the following response with status "304":
       """
@@ -63,7 +56,6 @@ Feature: Set cache time
   Examples:
     | sample-uri                                              | max-age |
     | /some-url                                               |     900 |
-    | /releasecalendar                                        |      10 |
     | /favicon.ico                                            |   14400 |
 
   Scenario: Return the errored cache time when the Legacy Cache API returns an error
@@ -71,57 +63,109 @@ Feature: Set cache time
     When the Proxy receives a GET request for "/some-path"
     Then the response header "Cache-Control" should be "public, s-maxage=30, max-age=30"
 
-  Scenario: Return the default cache time when the Legacy Cache API does not have the requested page
-    Given the Legacy Cache API does not have any data for the "/some-path" page
-    When the Proxy receives a GET request for "/some-path"
+  Scenario Outline: Return the default cache time when the Legacy Cache API does not have the requested page
+    Given the Legacy Cache API does not have any data for the "<page-updated>" page
+    When the Proxy receives a GET request for "<page-requested>"
     Then the response header "Cache-Control" should be "public, s-maxage=900, max-age=900"
+  Examples:
+    | page-updated | page-requested              |
+    | /some-path   | /some-path                  |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014 | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014/relateddata |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/latest      | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/previousreleases        |
 
-  Scenario: Return the default cache time when the release time is missing
-    Given the "/some-path" page does not have a release time
-    When the Proxy receives a GET request for "/some-path"
+
+  Scenario Outline: Return the default cache time when the release time is missing
+    Given the "<page-updated>" page does not have a release time
+    When the Proxy receives a GET request for "<page-requested>"
     Then the response header "Cache-Control" should be "public, s-maxage=900, max-age=900"
+  Examples:
+    | page-updated | page-requested              |
+    | /some-path   | /some-path                  |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014 | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014/relateddata |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/latest      | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/previousreleases        |
 
-  Scenario: Return the default cache time when the release time is missing and max-age countdown is disabled
-    Given the "/some-path" page does not have a release time
+  Scenario Outline: Return the default cache time when the release time is missing and max-age countdown is disabled
+    Given the "<page-updated>" page does not have a release time
     And config includes ENABLE_MAX_AGE_COUNTDOWN with a value of "false"
-    When the Proxy receives a GET request for "/some-path"
+    When the Proxy receives a GET request for "<page-requested>"
     Then the response header "Cache-Control" should be "public, s-maxage=900, max-age=900"
+  Examples:
+    | page-updated | page-requested              |
+    | /some-path   | /some-path                  |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014 | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014/relateddata |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/latest      | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/previousreleases        |
 
-  Scenario: Return the calculated cache time when the release time is in the near future
-    Given the "/some-path" page will have a release in the near future
-    When the Proxy receives a GET request for "/some-path"
+  @SearchCache
+  Scenario Outline: Return the calculated cache time when the release time is in the near future
+    Given the "<page-updated>" page will have a release in the near future
+    When the Proxy receives a GET request for "<page-requested>"
     Then the max-age,s-maxage directives should be calculated, rather than predefined
+  Examples:
+    | page-updated | page-requested              |
+    | /some-path   | /some-path                  |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014 | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014/relateddata |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/latest      | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/previousreleases        |
 
-  Scenario: Return the calculated cache time when the release time is in the near future and max-age countdown is disabled
-    Given the "/some-path" page will have a release in the near future
+  Scenario Outline: Return the calculated cache time when the release time is in the near future and max-age countdown is disabled
+    Given the "<page-updated>" page will have a release in the near future
     And config includes ENABLE_MAX_AGE_COUNTDOWN with a value of "false"
-    When the Proxy receives a GET request for "/some-path"
+    When the Proxy receives a GET request for "<page-requested>"
     Then the s-maxage directive should be calculated, rather than predefined
     And the max-age directive should be 0
+  Examples:
+    | page-updated | page-requested              |
+    | /some-path   | /some-path                  |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014 | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014/relateddata |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/latest      | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/previousreleases        |
 
-  Scenario: Return the default cache time when the release time is in the distant future
-    Given the "/some-path" page will have a release in the distant future
-    When the Proxy receives a GET request for "/some-path"
+  Scenario Outline: Return the default cache time when the release time is in the distant future
+    Given the "<page-updated>" page will have a release in the distant future
+    When the Proxy receives a GET request for "<page-requested>"
     Then the response header "Cache-Control" should be "public, s-maxage=900, max-age=900"
+  Examples:
+    | page-updated | page-requested              |
+    | /some-path   | /some-path                  |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014 | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014/relateddata |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/latest      | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/previousreleases        |
 
-  Scenario: Return the default cache time when the release time is in the distant future and max-age countdown is disabled
-    Given the "/some-path" page will have a release in the distant future
+  Scenario Outline: Return the default cache time when the release time is in the distant future and max-age countdown is disabled
+    Given the "<page-updated>" page will have a release in the distant future
     And config includes ENABLE_MAX_AGE_COUNTDOWN with a value of "false"
-    When the Proxy receives a GET request for "/some-path"
+    When the Proxy receives a GET request for "<page-requested>"
     Then the response header "Cache-Control" should be "public, s-maxage=900, max-age=900"
+  Examples:
+    | page-updated | page-requested              |
+    | /some-path   | /some-path                  |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014 | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014/relateddata |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/latest      | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/previousreleases        |
 
-  Scenario: Return the default cache time when the page was released long ago
-    Given the "/some-path" page was released long ago
-    When the Proxy receives a GET request for "/some-path"
+  Scenario Outline: Return the default cache time when the page was released long ago
+    Given the "<page-updated>" page was released long ago
+    When the Proxy receives a GET request for "<page-requested>"
     Then the response header "Cache-Control" should be "public, s-maxage=900, max-age=900"
+  Examples:
+    | page-updated | page-requested              |
+    | /some-path   | /some-path                  |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014 | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014/relateddata |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/latest      | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/previousreleases        |
 
-  Scenario: Return the short cache time when the page was released recently
-    Given the "/some-path" page was released recently
-    When the Proxy receives a GET request for "/some-path"
+  Scenario Outline: Return the short cache time when the page was released recently
+    Given the "<page-updated>" page was released recently
+    When the Proxy receives a GET request for "<page-requested>"
     Then the response header "Cache-Control" should be "public, s-maxage=10, max-age=10"
+  Examples:
+    | page-updated | page-requested              |
+    | /some-path   | /some-path                  |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014 | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014/relateddata |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/latest      | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/previousreleases        |
 
-  Scenario: Return the default cache time when the page was released recently and the publish expiry offset is disabled
-    Given the "/some-path" page was released recently
+  Scenario Outline: Return the default cache time when the page was released recently and the publish expiry offset is disabled
+    Given the "<page-updated>" page was released recently
     And the Proxy has the publish expiry offset disabled
-    When the Proxy receives a GET request for "/some-path"
+    When the Proxy receives a GET request for "<page-requested>"
     Then the response header "Cache-Control" should be "public, s-maxage=900, max-age=900"
+  Examples:
+    | page-updated | page-requested              |
+    | /some-path   | /some-path                  |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014 | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/october2014/relateddata |
+    | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/latest      | economy/economicoutputandproductivity/productivitymeasures/articles/gdpandthelabourmarket/previousreleases        |

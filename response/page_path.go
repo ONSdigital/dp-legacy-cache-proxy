@@ -14,6 +14,7 @@ var (
 
 	visualisationsEndpointRegexp          = regexp.MustCompile(`(^/visualisations/[^/]+)/`)
 	bulletinsOrArticlesPathRegexp         = regexp.MustCompile(`(.+/(bulletins|articles)(?:/[^/]+){2})`)
+	relatedDataRegexp                     = regexp.MustCompile(`/related[Dd]ata$`)
 	methodologiesOrQMIsOrAdHocsPathRegexp = regexp.MustCompile(`.+/(methodologies|qmis|adhocs)/([^/]+)`)
 	fileNameWithExtensionRegexp           = regexp.MustCompile(`(.*)/[^/]+\.\w+$`)
 	timeSeriesPathRegexp                  = regexp.MustCompile(`(.+/timeseries(?:/[^/]+){0,2})`)
@@ -105,10 +106,22 @@ func resolveBulletinsOrArticlesPath(uri string) (string, bool) {
 	match := bulletinsOrArticlesPathRegexp.FindStringSubmatch(uri)
 
 	if len(match) == 3 {
-		return match[1], true
+		return resolveBulletinsOrArticlesExtensionPath(match[1]), true
 	}
 
 	return "", false
+}
+
+func resolveBulletinsOrArticlesExtensionPath(uri string) string {
+	if strings.HasSuffix(uri, "/previousreleases") {
+		return strings.TrimSuffix(uri, "/previousreleases") + "/latest"
+	}
+
+	if relatedDataRegexp.MatchString(uri) {
+		return relatedDataRegexp.ReplaceAllString(uri, "")
+	}
+
+	return uri
 }
 
 func resolveMethodologiesQMIsOrAdHocsPath(uri string) (string, bool) {

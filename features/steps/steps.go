@@ -26,6 +26,7 @@ func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	c.babbageFeature.RegisterSteps(ctx)
 	c.legacyCacheAPIFeature.RegisterSteps(ctx)
 	c.releaseCalendarFeature.RegisterSteps(ctx)
+	c.searchControllerFeature.RegisterSteps(ctx)
 
 	ctx.Step(`^I should receive an empty response$`, c.iShouldReceiveAnEmptyResponse)
 	ctx.Step(`^I should receive the same, unmodified response from Babbage$`, c.iShouldReceiveTheSameUnmodifiedResponseFromBabbage)
@@ -58,6 +59,12 @@ func (c *Component) configIncludes(configItem, configVal string) error {
 			return err
 		}
 		c.Config.EnableMaxAgeCountdown = isEnabled
+	case "ENABLE_SEARCH_CONTROLLER":
+		isEnabled, err := strconv.ParseBool(configVal)
+		if err != nil {
+			return err
+		}
+		c.Config.EnableSearchController = isEnabled
 	default:
 		return fmt.Errorf("not a valid config item")
 	}

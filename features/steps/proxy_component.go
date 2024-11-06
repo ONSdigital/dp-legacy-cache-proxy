@@ -16,16 +16,17 @@ import (
 
 type Component struct {
 	componenttest.ErrorFeature
-	svcList                *service.ExternalServiceList
-	svc                    *service.Service
-	errorChan              chan error
-	Config                 *config.Config
-	HTTPServer             *http.Server
-	ServiceRunning         bool
-	apiFeature             *componenttest.APIFeature
-	babbageFeature         *BabbageFeature
-	legacyCacheAPIFeature  *LegacyCacheAPIFeature
-	releaseCalendarFeature *ReleaseCalendarFeature
+	svcList                 *service.ExternalServiceList
+	svc                     *service.Service
+	errorChan               chan error
+	Config                  *config.Config
+	HTTPServer              *http.Server
+	ServiceRunning          bool
+	apiFeature              *componenttest.APIFeature
+	babbageFeature          *BabbageFeature
+	legacyCacheAPIFeature   *LegacyCacheAPIFeature
+	releaseCalendarFeature  *ReleaseCalendarFeature
+	searchControllerFeature *SearchControllerFeature
 }
 
 func NewComponent() (*Component, error) {
@@ -44,10 +45,12 @@ func NewComponent() (*Component, error) {
 	c.babbageFeature = NewBabbageFeature()
 	c.legacyCacheAPIFeature = NewLegacyCacheAPIFeature()
 	c.releaseCalendarFeature = NewReleaseCalendarFeature()
+	c.searchControllerFeature = NewSearchControllerFeature()
 
 	c.Config.BabbageURL = c.babbageFeature.Server.URL
 	c.Config.LegacyCacheAPIURL = c.legacyCacheAPIFeature.Server.URL
 	c.Config.RelCalURL = c.releaseCalendarFeature.Server.URL
+	c.Config.SearchControllerURL = c.searchControllerFeature.Server.URL
 	c.Config.EnablePublishExpiryOffset = true
 
 	initMock := &mock.InitialiserMock{
@@ -74,6 +77,7 @@ func (c *Component) Close() error {
 		c.babbageFeature.Server.Close()
 		c.legacyCacheAPIFeature.Server.Close()
 		c.releaseCalendarFeature.Server.Close()
+		c.searchControllerFeature.Server.Close()
 		if err := c.svc.Close(context.Background()); err != nil {
 			return err
 		}

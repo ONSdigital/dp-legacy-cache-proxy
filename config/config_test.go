@@ -34,6 +34,7 @@ func TestConfig(t *testing.T) {
 					BabbageURL:                  "http://localhost:8080",
 					LegacyCacheAPIURL:           "http://localhost:29100",
 					RelCalURL:                   "http://localhost:27700",
+					SearchControllerURL:         "http://localhost:25000",
 					CacheTimeDefault:            15 * time.Minute,
 					CacheTimeErrored:            30 * time.Second,
 					CacheTimeLong:               4 * time.Hour,
@@ -45,6 +46,7 @@ func TestConfig(t *testing.T) {
 					StaleWhileRevalidateSeconds: -1,
 					EnableMaxAgeCountdown:       true,
 					OtelEnabled:                 false,
+					EnableSearchController:      false,
 				})
 			})
 

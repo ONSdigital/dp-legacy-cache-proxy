@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 	"regexp"
 	"strings"
 	"time"
@@ -16,7 +15,6 @@ import (
 const maxAgeErrorMessage = "error calculating the max-age directive"
 
 var versionedURIRegexp = regexp.MustCompile(`/previous/v\d+`)
-var searchPageRegexp = regexp.MustCompile(`\/(allmethodologies|releasecalendar|timeseriestool|datalist|publications|staticlist|topicspecificmethodology|relateddata|alladhocs|publishedrequests)$`)
 
 func maxAge(ctx context.Context, uri string, cfg *config.Config) (int, bool) {
 	log.Info(ctx, "Calculating max-age", log.Data{"uri": uri})
@@ -25,15 +23,12 @@ func maxAge(ctx context.Context, uri string, cfg *config.Config) (int, bool) {
 		return int(cfg.CacheTimeLong.Seconds()), false
 	}
 
-	if isSearchPageURI(uri) {
-		return int(cfg.CacheTimeShort.Seconds()), false
-	}
-
 	pagePath, err := getPagePath(ctx, uri)
 	if err != nil {
 		log.Error(ctx, maxAgeErrorMessage, err)
 		return int(cfg.CacheTimeErrored.Seconds()), false
 	}
+	log.Info(ctx, "Page path is: ", log.Data{"path": pagePath})
 
 	releaseTime, statusCode, err := getReleaseTime(pagePath, cfg.LegacyCacheAPIURL)
 	if err != nil {
@@ -92,13 +87,4 @@ func isVersionedURI(uri string) bool {
 
 func wasReleasedRecently(releaseTime time.Time, offset time.Duration) bool {
 	return releaseTime.Add(offset).After(time.Now())
-}
-
-func isSearchPageURI(uri string) bool {
-	urlToTest, err := url.Parse(uri)
-	if err != nil {
-		return false
-	}
-
-	return searchPageRegexp.MatchString(urlToTest.Path)
 }

@@ -146,6 +146,10 @@ func TestGetPagePath(t *testing.T) {
 				expected: "/economy/inflationandpriceindices/articles/researchanddevelopmentsinthetransformationofukconsumerpricestatistics/latest",
 			},
 			{
+				uri:      "/economy/inflationandpriceindices/articles/researchanddevelopmentsinthetransformationofukconsumerpricestatistics/latest/data",
+				expected: "/economy/inflationandpriceindices/articles/researchanddevelopmentsinthetransformationofukconsumerpricestatistics/latest",
+			},
+			{
 				uri:      "/economy/inflationandpriceindices/articles/costofliving/latestinsights",
 				expected: "/economy/inflationandpriceindices/articles/costofliving/latestinsights",
 			},
@@ -156,6 +160,18 @@ func TestGetPagePath(t *testing.T) {
 			{
 				uri:      "/segment-0/articles/segment-1/segment-2/segment-3/",
 				expected: "/segment-0/articles/segment-1/segment-2",
+			},
+			{
+				uri:      "/economy/inflationandpriceindices/articles/researchanddevelopmentsinthetransformationofukconsumerpricestatistics/previousreleases",
+				expected: "/economy/inflationandpriceindices/articles/researchanddevelopmentsinthetransformationofukconsumerpricestatistics/latest",
+			},
+			{
+				uri:      "/economy/inflationandpriceindices/articles/researchanddevelopmentsinthetransformationofukconsumerpricestatistics/december2023/relateddata",
+				expected: "/economy/inflationandpriceindices/articles/researchanddevelopmentsinthetransformationofukconsumerpricestatistics/december2023",
+			},
+			{
+				uri:      "/economy/inflationandpriceindices/articles/researchanddevelopmentsinthetransformationofukconsumerpricestatistics/december2023/relatedData",
+				expected: "/economy/inflationandpriceindices/articles/researchanddevelopmentsinthetransformationofukconsumerpricestatistics/december2023",
 			},
 		}
 		methodologiesPaths := []TestCase{
