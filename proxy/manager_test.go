@@ -145,6 +145,18 @@ func TestProxyHandleRoutingSearch(t *testing.T) {
 				So(w.Header().Get("mock-header"), ShouldEqual, "test")
 			})
 		})
+
+		Convey("When a search request is sent with a query param", func() {
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodGet, "/test-endpoint/previousreleases?page=2", http.NoBody)
+			legacyCacheProxy.Router.ServeHTTP(w, r)
+
+			Convey("Then the proxy response should match the Search response", func() {
+				So(w.Code, ShouldEqual, http.StatusOK)
+				So(w.Body.String(), ShouldEqual, "Mock Search Response")
+				So(w.Header().Get("mock-header"), ShouldEqual, "test")
+			})
+		})
 	})
 
 	Convey("Given a Proxy, a mock Babbage and Search Controller Proxying is disabled", t, func() {
@@ -166,6 +178,18 @@ func TestProxyHandleRoutingSearch(t *testing.T) {
 		Convey("When a search request is sent", func() {
 			w := httptest.NewRecorder()
 			r := httptest.NewRequest(http.MethodGet, "/test-endpoint/previousreleases", http.NoBody)
+			legacyCacheProxy.Router.ServeHTTP(w, r)
+
+			Convey("Then the proxy response should match the Babbage response", func() {
+				So(w.Code, ShouldEqual, http.StatusOK)
+				So(w.Body.String(), ShouldEqual, "Mock Babbage Response")
+				So(w.Header().Get("mock-header"), ShouldEqual, "test")
+			})
+		})
+
+		Convey("When a search request is sent with a query param", func() {
+			w := httptest.NewRecorder()
+			r := httptest.NewRequest(http.MethodGet, "/test-endpoint/previousreleases?page=2", http.NoBody)
 			legacyCacheProxy.Router.ServeHTTP(w, r)
 
 			Convey("Then the proxy response should match the Babbage response", func() {

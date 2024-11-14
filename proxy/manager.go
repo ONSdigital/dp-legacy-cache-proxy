@@ -3,6 +3,7 @@ package proxy
 import (
 	"context"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/ONSdigital/dp-legacy-cache-proxy/config"
@@ -49,12 +50,16 @@ func (proxy *Proxy) manage(ctx context.Context, w http.ResponseWriter, req *http
 	response.WriteResponse(ctx, w, serviceResponse, req, cfg)
 }
 
-func IsReleaseCalendarURL(url string) bool {
-	return strings.HasPrefix(url, "/releases/")
+func IsReleaseCalendarURL(requestURLstring string) bool {
+	return strings.HasPrefix(requestURLstring, "/releases/")
 }
 
-func IsSearchControllerURL(url string) bool {
-	return (strings.HasSuffix(url, "/previousreleases") || strings.HasSuffix(url, "/relatedData") || strings.HasSuffix(url, "/relateddata"))
+func IsSearchControllerURL(requestURLstring string) bool {
+	requestURL, err := url.Parse(requestURLstring)
+	if err != nil {
+		return false
+	}
+	return (strings.HasSuffix(requestURL.EscapedPath(), "/previousreleases") || strings.HasSuffix(requestURL.EscapedPath(), "/relatedData") || strings.HasSuffix(requestURL.EscapedPath(), "/relateddata"))
 }
 
 func getTargetURL(requestURL string, cfg *config.Config) string {
