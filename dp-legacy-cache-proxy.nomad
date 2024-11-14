@@ -78,6 +78,7 @@ job "dp-legacy-cache-proxy" {
         export BABBAGE_URL="http://{{ env "NOMAD_IP_http" }}:10000"
         export LEGACY_CACHE_API_URL="http://{{ env "NOMAD_IP_http" }}:13850"
         export RELEASE_CALENDAR_URL="http://{{ env "NOMAD_IP_http" }}:13000"
+        export SEARCH_CONTROLLER_URL="http://{{ env "NOMAD_IP_http" }}:11750"
 
         # Secret configs read from vault
         {{ with (secret (print "secret/" (env "NOMAD_TASK_NAME"))) }}
