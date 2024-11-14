@@ -3,7 +3,6 @@ package service_test
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/http"
 	"sync"
 	"testing"
@@ -57,14 +56,14 @@ func TestRun(t *testing.T) {
 
 		serverWg := &sync.WaitGroup{}
 		serverMock := &mock.HTTPServerMock{
-			ServeFunc: func(_ net.Listener) error {
+			ListenAndServeFunc: func() error {
 				serverWg.Done()
 				return nil
 			},
 		}
 
 		failingServerMock := &mock.HTTPServerMock{
-			ServeFunc: func(_ net.Listener) error {
+			ListenAndServeFunc: func() error {
 				serverWg.Done()
 				return errServer
 			},
@@ -133,7 +132,7 @@ func TestRun(t *testing.T) {
 				So(len(hcMock.StartCalls()), ShouldEqual, 1)
 				//!!! a call needed to stop the server, maybe ?
 				serverWg.Wait() // Wait for HTTP server go-routine to finish
-				So(len(serverMock.ServeCalls()), ShouldEqual, 1)
+				So(len(serverMock.ListenAndServeCalls()), ShouldEqual, 1)
 			})
 
 			Convey("Then the proxy's catch-all route is the one with the lowest precedence", func() {
@@ -199,7 +198,7 @@ func TestRun(t *testing.T) {
 			Convey("Then the error is returned in the error channel", func() {
 				sErr := <-svcErrors
 				So(sErr.Error(), ShouldResemble, fmt.Sprintf("failure in http listen and serve: %s", errServer.Error()))
-				So(len(failingServerMock.ServeCalls()), ShouldEqual, 1)
+				So(len(failingServerMock.ListenAndServeCalls()), ShouldEqual, 1)
 			})
 
 			Reset(func() {
@@ -228,7 +227,7 @@ func TestClose(t *testing.T) {
 		// server Shutdown will fail if healthcheck is not stopped
 		// nolint:revive // param names give context here.
 		serverMock := &mock.HTTPServerMock{
-			ServeFunc: func(l net.Listener) error { return nil },
+			ListenAndServeFunc: func() error { return nil },
 			ShutdownFunc: func(ctx context.Context) error {
 				if !hcStopped {
 					return errors.New("Server stopped before healthcheck")
@@ -261,7 +260,7 @@ func TestClose(t *testing.T) {
 		Convey("If services fail to stop, the Close operation tries to close all dependencies and returns an error", func() {
 			// nolint:revive // param names give context here.
 			failingserverMock := &mock.HTTPServerMock{
-				ServeFunc: func(l net.Listener) error { return nil },
+				ListenAndServeFunc: func() error { return nil },
 				ShutdownFunc: func(ctx context.Context) error {
 					return errors.New("Failed to stop http server")
 				},
@@ -293,7 +292,7 @@ func TestClose(t *testing.T) {
 			cfg.GracefulShutdownTimeout = 1 * time.Millisecond
 			// nolint:revive // param names give context here.
 			timeoutServerMock := &mock.HTTPServerMock{
-				ServeFunc: func(l net.Listener) error { return nil },
+				ListenAndServeFunc: func() error { return nil },
 				ShutdownFunc: func(ctx context.Context) error {
 					time.Sleep(200 * time.Millisecond)
 					return nil

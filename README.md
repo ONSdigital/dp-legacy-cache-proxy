@@ -27,7 +27,6 @@ directives in the `Cache-Control` header to appropriate values.
 | GRACEFUL_SHUTDOWN_TIMEOUT      | 5s                        | The graceful shutdown timeout[^gotime]
 | HEALTHCHECK_INTERVAL           | 30s                       | Time between self-healthchecks[^gotime]
 | HEALTHCHECK_CRITICAL_TIMEOUT   | 90s                       | Time duration[^gotime] to wait until an unhealthy dependent propagates its state to make this app unhealthy
-| HTTP_MAX_CONNECTIONS           | 0                         | Limit the number of concurrent http connections (0 = unlimited)
 | OTEL_BATCH_TIMEOUT             | 5s                        | Time duration[^gotime] after which a batch will be sent regardless of size
 | OTEL_EXPORTER_OTLP_ENDPOINT    | localhost:4317            | OpenTelemetry Exporter address
 | OTEL_SERVICE_NAME              | dp-legacy-cache-proxy     | The name of this service in OpenTelemetry
