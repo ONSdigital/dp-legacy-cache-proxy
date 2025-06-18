@@ -34,13 +34,9 @@ Feature: Unmodified response
   Examples:
     | status-code |
     | 300         |
-    | 301         |
-    | 302         |
     | 303         |
     | 305         |
     | 306         |
-    | 307         |
-    | 308         |
     | 400         |
     | 401         |
     | 402         |

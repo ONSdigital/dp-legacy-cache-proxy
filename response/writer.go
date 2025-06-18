@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 
 	"github.com/ONSdigital/dp-legacy-cache-proxy/config"
 	"github.com/ONSdigital/log.go/v2/log"
@@ -86,7 +87,9 @@ func isGetOrHead(method string) bool {
 }
 
 func isCacheableStatusCode(statusCode int) bool {
-	return statusCode < 300 || statusCode == 304 || statusCode == 404
+	cacheableStatusCodeExceptions := []int{301, 302, 304, 307, 308, 404}
+
+	return statusCode < 300 || slices.Contains(cacheableStatusCodeExceptions, statusCode)
 }
 
 func shouldCalculateMaxAge(cacheControlValue string) bool {
