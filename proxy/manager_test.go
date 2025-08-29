@@ -261,3 +261,33 @@ func TestIsSearchControllerURL(t *testing.T) {
 		})
 	})
 }
+
+func TestIsDatasetLandingPage(t *testing.T) {
+	Convey("Given a page type of dataset_landing_page", t, func() {
+		Convey("When the 'IsDatasetLandingPage' function is called with the page type", func() {
+			isDatasetLandingPage := IsDatasetLandingPage("dataset_landing_page")
+
+			Convey("Then it should return true", func() {
+				So(isDatasetLandingPage, ShouldBeTrue)
+			})
+		})
+	})
+	Convey("Given a page type of bulletin", t, func() {
+		Convey("When the 'IsDatasetLandingPage' function is called with the page type", func() {
+			isDatasetLandingPage := IsDatasetLandingPage("bulletin")
+
+			Convey("Then it should return false", func() {
+				So(isDatasetLandingPage, ShouldBeFalse)
+			})
+		})
+	})
+	Convey("Given a blank content type", t, func() {
+		Convey("When the 'IsDatasetLandingPage' function is called", func() {
+			isDatasetLandingPage := IsDatasetLandingPage("")
+
+			Convey("Then it should return false", func() {
+				So(isDatasetLandingPage, ShouldBeFalse)
+			})
+		})
+	})
+}

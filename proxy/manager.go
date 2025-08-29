@@ -12,7 +12,8 @@ import (
 )
 
 func (proxy *Proxy) manage(ctx context.Context, w http.ResponseWriter, req *http.Request, cfg *config.Config) {
-	targetURL := getTargetURL(req.URL.String(), cfg)
+	pageType := req.Header.Get("Ons-Page-Type")
+	targetURL := getTargetURL(req.URL.String(), pageType, cfg)
 
 	proxyReq, err := http.NewRequestWithContext(ctx, req.Method, targetURL, req.Body)
 
@@ -62,11 +63,18 @@ func IsSearchControllerURL(requestURLstring string) bool {
 	return (strings.HasSuffix(requestURL.EscapedPath(), "/previousreleases") || strings.HasSuffix(requestURL.EscapedPath(), "/relatedData") || strings.HasSuffix(requestURL.EscapedPath(), "/relateddata"))
 }
 
-func getTargetURL(requestURL string, cfg *config.Config) string {
+// IsDatasetLandingPage checks if the page type is a dataset_landing_page
+func IsDatasetLandingPage(pageTypeString string) bool {
+	return pageTypeString == "dataset_landing_page"
+}
+
+func getTargetURL(requestURL, pageType string, cfg *config.Config) string {
 	if IsReleaseCalendarURL(requestURL) {
 		return cfg.RelCalURL + requestURL
 	} else if IsSearchControllerURL(requestURL) && cfg.EnableSearchController {
 		return cfg.SearchControllerURL + requestURL
+	} else if IsDatasetLandingPage(pageType) {
+		return cfg.DatasetControllerURL + requestURL
 	}
 	return cfg.BabbageURL + requestURL
 }
