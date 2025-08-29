@@ -48,11 +48,6 @@ fmt: ## Run Go formatting on code
 lint: ## Used in ci to run linters against Go code
 	golangci-lint run ./...
 
-.PHONY: lint-local
-lint-local: ## Use locally to run linters against Go code
-	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.62.0
-	golangci-lint run ./...
-
 .PHONY: test
 test: ## Runs unit tests including checks for race conditions and returns coverage
 	go test -race -cover ./...
