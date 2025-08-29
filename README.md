@@ -32,6 +32,7 @@ directives in the `Cache-Control` header to appropriate values.
 | OTEL_SERVICE_NAME              | dp-legacy-cache-proxy     | The name of this service in OpenTelemetry
 | OTEL_ENABLED                   | false                     | Turn OTEL on / off
 | BABBAGE_URL                    | `http://localhost:8080`   | Babbage address, where most of the incoming requests are forwarded to
+| DATASET_CONTROLLER_URL         | `http://localhost:20200`  | Frontend dataset controller address
 | LEGACY_CACHE_API_URL           | `http://localhost:29100`  | Legacy Cache API address
 | RELEASE_CALENDAR_URL           | `http://localhost:27700`  | Release calendar frontend controller address
 | CACHE_TIME_DEFAULT             | 15m                       | Default value[^gotime] for `max-age`[^cachedir]

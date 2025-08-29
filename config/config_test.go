@@ -31,6 +31,7 @@ func TestConfig(t *testing.T) {
 					OTExporterOTLPEndpoint:      "localhost:4317",
 					OTServiceName:               "dp-legacy-cache-proxy",
 					BabbageURL:                  "http://localhost:8080",
+					DatasetControllerURL:        "http://localhost:20200",
 					LegacyCacheAPIURL:           "http://localhost:29100",
 					RelCalURL:                   "http://localhost:27700",
 					SearchControllerURL:         "http://localhost:25000",

@@ -19,6 +19,7 @@ type Config struct {
 	RelCalURL                   string        `envconfig:"RELEASE_CALENDAR_URL"`
 	EnableSearchController      bool          `envconfig:"ENABLE_SEARCH_CONTROLLER"`
 	SearchControllerURL         string        `envconfig:"SEARCH_CONTROLLER_URL"`
+	DatasetControllerURL        string        `envconfig:"DATASET_CONTROLLER_URL"`
 	LegacyCacheAPIURL           string        `envconfig:"LEGACY_CACHE_API_URL"`
 	CacheTimeDefault            time.Duration `envconfig:"CACHE_TIME_DEFAULT"`
 	CacheTimeErrored            time.Duration `envconfig:"CACHE_TIME_ERRORED"`
@@ -54,6 +55,7 @@ func Get() (*Config, error) {
 		LegacyCacheAPIURL:           "http://localhost:29100",
 		RelCalURL:                   "http://localhost:27700",
 		SearchControllerURL:         "http://localhost:25000",
+		DatasetControllerURL:        "http://localhost:20200",
 		EnableSearchController:      false,
 		CacheTimeDefault:            15 * time.Minute,
 		CacheTimeErrored:            30 * time.Second,
