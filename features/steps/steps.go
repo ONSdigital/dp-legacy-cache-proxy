@@ -205,11 +205,12 @@ func (c *Component) theDirectiveShouldBe(directiveName string, expectedValue int
 		return err
 	}
 	var obtainedValue int
-	if directiveName == maxAgeDirective {
+	switch directiveName {
+	case maxAgeDirective:
 		obtainedValue = maxAge
-	} else if directiveName == serverMaxAgeDirective {
+	case serverMaxAgeDirective:
 		obtainedValue = serverMaxAge
-	} else {
+	default:
 		return fmt.Errorf("did not recognise directive %q", directiveName)
 	}
 	if obtainedValue != expectedValue {

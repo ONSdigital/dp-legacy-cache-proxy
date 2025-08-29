@@ -48,8 +48,8 @@ func (e *ExternalServiceList) GetRequestMiddleware() RequestMiddleware {
 // DoGetHTTPServer creates an HTTP Server with the provided bind address and router
 func (e *Init) DoGetHTTPServer(cfg *config.Config, bindAddr string, router http.Handler) HTTPServer {
 	s := dphttp.NewServer(bindAddr, router)
-	s.Server.ReadTimeout = cfg.ReadTimeout
-	s.Server.WriteTimeout = cfg.WriteTimeout
+	s.ReadTimeout = cfg.ReadTimeout
+	s.WriteTimeout = cfg.WriteTimeout
 	s.HandleOSSignals = false
 	return s
 }
