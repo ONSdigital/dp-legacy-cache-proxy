@@ -24,6 +24,7 @@ var (
 func (c *Component) RegisterSteps(ctx *godog.ScenarioContext) {
 	c.apiFeature.RegisterSteps(ctx)
 	c.babbageFeature.RegisterSteps(ctx)
+	c.datasetFeature.RegisterSteps(ctx)
 	c.legacyCacheAPIFeature.RegisterSteps(ctx)
 	c.releaseCalendarFeature.RegisterSteps(ctx)
 	c.searchControllerFeature.RegisterSteps(ctx)

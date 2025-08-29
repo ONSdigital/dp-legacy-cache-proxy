@@ -24,6 +24,7 @@ type Component struct {
 	ServiceRunning          bool
 	apiFeature              *componenttest.APIFeature
 	babbageFeature          *BabbageFeature
+	datasetFeature          *DatasetControllerFeature
 	legacyCacheAPIFeature   *LegacyCacheAPIFeature
 	releaseCalendarFeature  *ReleaseCalendarFeature
 	searchControllerFeature *SearchControllerFeature
@@ -43,11 +44,13 @@ func NewComponent() (*Component, error) {
 	}
 
 	c.babbageFeature = NewBabbageFeature()
+	c.datasetFeature = NewDatasetControllerFeature()
 	c.legacyCacheAPIFeature = NewLegacyCacheAPIFeature()
 	c.releaseCalendarFeature = NewReleaseCalendarFeature()
 	c.searchControllerFeature = NewSearchControllerFeature()
 
 	c.Config.BabbageURL = c.babbageFeature.Server.URL
+	c.Config.DatasetControllerURL = c.datasetFeature.Server.URL
 	c.Config.LegacyCacheAPIURL = c.legacyCacheAPIFeature.Server.URL
 	c.Config.RelCalURL = c.releaseCalendarFeature.Server.URL
 	c.Config.SearchControllerURL = c.searchControllerFeature.Server.URL
@@ -75,6 +78,7 @@ func (c *Component) Reset() *Component {
 func (c *Component) Close() error {
 	if c.svc != nil && c.ServiceRunning {
 		c.babbageFeature.Server.Close()
+		c.datasetFeature.Server.Close()
 		c.legacyCacheAPIFeature.Server.Close()
 		c.releaseCalendarFeature.Server.Close()
 		c.searchControllerFeature.Server.Close()
