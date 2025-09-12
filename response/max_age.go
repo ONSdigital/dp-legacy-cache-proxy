@@ -17,7 +17,7 @@ const maxAgeErrorMessage = "error calculating the max-age directive"
 var versionedURIRegexp = regexp.MustCompile(`/previous/v\d+`)
 
 func maxAge(ctx context.Context, uri string, cfg *config.Config) (int, bool) {
-	log.Info(ctx, "Calculating max-age", log.Data{"uri": uri})
+	log.Info(ctx, "calculating max-age", log.Data{"uri": uri})
 
 	if isLegacyAssetURI(uri) || isOnsURI(uri) || isVersionedURI(uri) {
 		return int(cfg.CacheTimeLong.Seconds()), false
@@ -28,7 +28,7 @@ func maxAge(ctx context.Context, uri string, cfg *config.Config) (int, bool) {
 		log.Error(ctx, maxAgeErrorMessage, err)
 		return int(cfg.CacheTimeErrored.Seconds()), false
 	}
-	log.Info(ctx, "Page path is: ", log.Data{"path": pagePath})
+	log.Info(ctx, "calculated page path", log.Data{"path": pagePath})
 
 	releaseTime, statusCode, err := getReleaseTime(pagePath, cfg.LegacyCacheAPIURL)
 	if err != nil {
@@ -52,6 +52,7 @@ func maxAge(ctx context.Context, uri string, cfg *config.Config) (int, bool) {
 
 	if releaseTime.After(time.Now()) {
 		if calculatedCacheTime := time.Until(releaseTime); calculatedCacheTime < cfg.CacheTimeDefault {
+			log.Info(ctx, "issuing cache countdown time")
 			return int(calculatedCacheTime.Seconds()), true
 		}
 
@@ -59,6 +60,7 @@ func maxAge(ctx context.Context, uri string, cfg *config.Config) (int, bool) {
 	}
 
 	if cfg.EnablePublishExpiryOffset && wasReleasedRecently(releaseTime, cfg.PublishExpiryOffset) {
+		log.Info(ctx, "issuing post publish microcache")
 		return int(cfg.CacheTimeShort.Seconds()), false
 	}
 

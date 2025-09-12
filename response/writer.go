@@ -26,6 +26,7 @@ func WriteResponse(ctx context.Context, w http.ResponseWriter, serviceResponse *
 		writeUnmodifiedResponse(ctx, w, serviceResponse)
 	} else {
 		maxAgeInSeconds, ageIsCalculated := maxAge(ctx, req.RequestURI, cfg)
+		log.Info(ctx, "writing response max-age", log.Data{"maxAge": maxAgeInSeconds, "ageIsCalculated": ageIsCalculated})
 		writeResponseWithMaxAge(ctx, w, serviceResponse, maxAgeInSeconds, ageIsCalculated, cfg)
 	}
 }

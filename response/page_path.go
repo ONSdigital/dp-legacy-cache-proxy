@@ -22,7 +22,7 @@ var (
 )
 
 func getPagePath(ctx context.Context, uri string) (string, error) {
-	log.Info(ctx, "Calculating page path", log.Data{"uri": uri})
+	log.Info(ctx, "calculating page path for uri", log.Data{"uri": uri})
 
 	uri = strings.TrimSuffix(uri, "/")
 
