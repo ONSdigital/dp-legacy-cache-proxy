@@ -76,10 +76,6 @@ linters:
           - gosec
         path: (release_time|legacy_cache_api_feature).go
         text: weak cryptographic primitive
-      - linters:
-        - gosec
-        path: (release_time|manager).go
-        text: SSRF via taint analysis
 issues:
   new: false
 formatters:

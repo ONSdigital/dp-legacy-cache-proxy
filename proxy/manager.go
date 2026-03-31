@@ -15,7 +15,7 @@ func (proxy *Proxy) manage(ctx context.Context, w http.ResponseWriter, req *http
 	pageType := req.Header.Get("Ons-Page-Type")
 	targetURL := getTargetURL(req.URL.String(), pageType, cfg)
 
-	proxyReq, err := http.NewRequestWithContext(ctx, req.Method, targetURL, req.Body)
+	proxyReq, err := http.NewRequestWithContext(ctx, req.Method, targetURL, req.Body) //nolint:gosec // we control the URLs so not technically as tainted as it suggests
 
 	if err != nil {
 		log.Error(ctx, "error creating the proxy request", err)
@@ -34,7 +34,7 @@ func (proxy *Proxy) manage(ctx context.Context, w http.ResponseWriter, req *http
 			return http.ErrUseLastResponse
 		},
 	}
-	serviceResponse, err := client.Do(proxyReq)
+	serviceResponse, err := client.Do(proxyReq) //nolint:gosec // we control the URLs so not technically as tainted as it suggests
 
 	if err != nil {
 		log.Error(ctx, "error sending the proxy request", err)

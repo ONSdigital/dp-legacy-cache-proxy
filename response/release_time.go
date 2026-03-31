@@ -34,12 +34,12 @@ func getReleaseTime(path, legacyCacheAPIURL string) (time.Time, int, error) {
 }
 
 func fetchCacheTimeResource(cacheTimeResourceURL string) (CacheTime, int, error) {
-	req, err := http.NewRequest(http.MethodGet, cacheTimeResourceURL, http.NoBody)
+	req, err := http.NewRequest(http.MethodGet, cacheTimeResourceURL, http.NoBody) //nolint:gosec // we control the URLs so not technically as tainted as it suggests
 	if err != nil {
 		return CacheTime{}, 0, err
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := http.DefaultClient.Do(req) //nolint:gosec // we control the URLs so not technically as tainted as it suggests
 	if err != nil {
 		return CacheTime{}, 0, err
 	}
