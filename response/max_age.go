@@ -12,12 +12,15 @@ import (
 	"github.com/ONSdigital/log.go/v2/log"
 )
 
-const maxAgeErrorMessage = "error calculating the max-age directive"
+const (
+	maxAgeErrorMessage = "error calculating the max-age directive"
+	uriLabel           = "uri"
+)
 
 var versionedURIRegexp = regexp.MustCompile(`/previous/v\d+`)
 
 func maxAge(ctx context.Context, uri string, cfg *config.Config) (int, bool) {
-	log.Info(ctx, "calculating max-age", log.Data{"uri": uri})
+	log.Info(ctx, "calculating max-age", log.Data{uriLabel: uri})
 
 	if isLegacyAssetURI(uri) || isOnsURI(uri) || isVersionedURI(uri) {
 		return int(cfg.CacheTimeLong.Seconds()), false

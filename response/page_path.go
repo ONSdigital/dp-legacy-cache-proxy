@@ -22,7 +22,7 @@ var (
 )
 
 func getPagePath(ctx context.Context, uri string) (string, error) {
-	log.Info(ctx, "calculating page path for uri", log.Data{"uri": uri})
+	log.Info(ctx, "calculating page path for uri", log.Data{uriLabel: uri})
 
 	uri = strings.TrimSuffix(uri, "/")
 
@@ -83,16 +83,16 @@ func isResourceEndpoint(uri string) bool {
 func extractAndDecodeURIFromQueryString(ctx context.Context, fullURI string) (string, error) {
 	urlStruct, err := url.Parse(fullURI)
 	if err != nil {
-		log.Error(ctx, "error parsing URI", err, log.Data{"uri": fullURI})
+		log.Error(ctx, "error parsing URI", err, log.Data{uriLabel: fullURI})
 		return "", err
 	}
 
-	if urlStruct.Query().Has("uri") {
-		uriQueryParam := urlStruct.Query().Get("uri")
+	if urlStruct.Query().Has(uriLabel) {
+		uriQueryParam := urlStruct.Query().Get(uriLabel)
 
 		decodedURI, err := url.QueryUnescape(uriQueryParam)
 		if err != nil {
-			log.Error(ctx, "unable to decode the 'uri' query parameter", err, log.Data{"uri": fullURI})
+			log.Error(ctx, "unable to decode the 'uri' query parameter", err, log.Data{uriLabel: fullURI})
 			return "", err
 		}
 
